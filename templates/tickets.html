@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Tickets</title>
+</head>
+<body>
+    <h1>All Tickets</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                {% for header in headers %}
+                <th>{{ header }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for ticket in tickets %}
+            <tr>
+                <td><a href="/ticketDetail.html?ticket_number={{ ticket[0] }}">{{ ticket[0] }}</a></td>
+                {% for field in ticket[1:] %}
+                <td>{{ field }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

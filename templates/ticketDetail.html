@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Single Ticket</title>
+</head>
+<body>
+    <h1>Single Ticket</h1>
+    <form action="/update_ticket" method="POST">
+        <label for="ticket_number">Ticket Number:</label>
+        <input type="text" id="ticket_number" name="ticket_number" value="{{ ticket[0] }}" readonly><br><br>
+
+        <label for="content">Content:</label>
+        <input type="text" id="content" name="content" value="{{ ticket[1] }}"><br><br>
+
+        <label for="state">State:</label>
+        <input type="text" id="state" name="state" value="{{ ticket[2] }}"><br><br>
+
+        <label for="created_date">Created Date:</label>
+        <input type="text" id="created_date" name="created_date" value="{{ ticket[3] }}" readonly><br><br>
+
+        <label for="modified_date">Modified Date:</label>
+        <input type="text" id="modified_date" name="modified_date" value="{{ ticket[4] }}" readonly><br><br>
+
+        <input type="submit" value="Update Ticket">
+    </form>
+</body>
+</html>
