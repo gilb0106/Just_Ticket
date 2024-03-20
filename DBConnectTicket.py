@@ -1,13 +1,12 @@
 import mysql.connector
 def connect_to_database():
     try:
-        # Replace 'hostname', 'username', 'password', and 'database' with your MySQL connection details
         conn = mysql.connector.connect(
             host='localhost',
             user='root',
             password='root',
             database='ticket',
-            auth_plugin='mysql_native_password'  # Specify the authentication plugin separately
+            auth_plugin='mysql_native_password'
         )
         print("Connected to MySQL database")
         return conn

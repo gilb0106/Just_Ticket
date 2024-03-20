@@ -1,35 +1,54 @@
-from flask import Flask, render_template, request
-
-from DBConnect import connect_to_database,  close_database_connection
-from Dao import  get_tickets,get_ticket_details
+from flask import Flask, render_template, request, redirect, url_for, session
+from DBConnectUser import connect_to_database as connect_user_database, close_database_connection as close_user_database_connection
+from DBConnectTicket import connect_to_database as connect_ticket_database, close_database_connection as close_ticket_database_connection
+from TicketDao import *
+from UserDao import *
 
 app = Flask(__name__)
-
+app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
+user_dao = UserDAO(connect_user_database())
+ticket_dao = TicketDao(connect_ticket_database())
 
 @app.route('/')
-def hello_world():  # put application's code here
+def hello_world():
     return render_template('index.html')
 
-# Route for the login page
-@app.route('/login.html')
-def login():
-    return render_template('login.html')
-
-# Route for the registration page
 @app.route('/register.html')
 def register():
     return render_template('register.html')
 
-# Python code
+@app.route('/login.html', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['uname']
+        password = request.form['psw']
+        user = user_dao.authenticate_user(username, password)
+        if user:
+            session['username'] = user['Username']
+            user_role = user['RoleName']  # Obtain role directly from user object
+            if user_role == 'admin':
+                return redirect(url_for('show_tickets'))
+            else:
+                return redirect(url_for('show_tickets'))
+        else:
+            return "Invalid username or password"
+    return render_template('login.html')
+
+
 @app.route('/tickets.html')
 def show_tickets():
     # Connect to the database
     conn = connect_to_database()
     if conn:
         # Call the get_tickets function to fetch all tickets from the database
-        tickets = get_tickets(conn)
+        tickets = ticket_dao.get_tickets()
         # Close the database connection
         close_database_connection(conn)
+
+        # Check if tickets is None
+        if tickets is None:
+            return "No tickets found"  # Return an appropriate message
+
         # Pass the tickets data to the template for rendering
         return render_template('tickets.html',
                                tickets=tickets, headers=['Ticket #',
@@ -37,52 +56,20 @@ def show_tickets():
     else:
         return "Failed to connect to the database"
 
-@app.route('/ticketdetail')
-def show_ticket():
-    # Extract ticket number from the query parameters
-    ticket_number = request.args.get('ticketnumber')
-
-    if ticket_number is None:
-        return "Ticket number is missing in the request."
-
-    # Connect to the database
-    conn = connect_to_database()
-    if conn:
-        try:
-            # Fetch the ticket details from the database
-            ticket_details = get_ticket_details(conn, ticket_number)
-            if ticket_details:
-                # Close the database connection
-                close_database_connection(conn)
-                # Pass the ticket details to the template for rendering
-                return render_template('ticket_detail.html', ticket=ticket_details)
-            else:
-                return f"Ticket with number {ticket_number} not found."
-        except Exception as e:
-            return f"Error fetching ticket details: {str(e)}"
-    else:
-        return "Failed to connect to the database."
-
 @app.route('/ticketDetail.html')
 def ticket_detail():
     ticket_number = request.args.get('ticket_number')
-    # Connect to the database
-    conn = connect_to_database()
-    if conn:
-        try:
-            # Fetch the ticket details from the database based on the provided ticket number
-            ticket_details = get_ticket_details(conn, ticket_number)
-            if ticket_details:
-                # Close the database connection
-                close_database_connection(conn)
-                # Pass the ticket details to the template for rendering
-                return render_template('ticketDetail.html', ticket=ticket_details)
-            else:
-                return f"Ticket with number {ticket_number} not found."
-        except Exception as e:
-            return f"Error fetching ticket details: {str(e)}"
-    else:
-        return "Failed to connect to the database."
+    print(ticket_number)
+    try:
+        ticket_details = ticket_dao.get_ticket_details(ticket_number)  # Pass 'conn' here
+        print(ticket_details)
+        print(ticket_number)
+        if ticket_details:
+            return render_template('ticketDetail.html', ticket=ticket_details)
+        else:
+            return f"Ticket with number {ticket_number} not found."
+    except Exception as e:
+        return f"Error fetching ticket details: {str(e)}"
 
 if __name__ == '__main__':
     app.run()
