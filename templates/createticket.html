@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Ticket</title>
+</head>
+<body>
+    <h1>Create Ticket</h1>
+    <form action="/create_ticket" method="POST">
+        <label for="content">Content:</label><br>
+        <textarea id="content" name="content" rows="4" cols="50"></textarea><br><br>
+
+        <label for="created_by">Created By:</label>
+        <input type="text" id="created_by" name="created_by" readonly value="{{ session['username'] }}"><br><br>
+
+        <label for="created_date">Created Date:</label>
+        <input type="text" id="created_date" name="created_date" readonly value="{{ current_date }}"><br><br>
+
+        <input type="submit" value="Create">
+    </form>
+</body>
+</html>

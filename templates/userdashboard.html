@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Dashboard</title>
+</head>
+<body>
+    <h1>All Tickets</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                {% for header in headers %}
+                <th>{{ header }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for ticket in tickets %}
+            <tr>
+                <td><a href="/ticketDetail.html?ticket_number={{ ticket['TicketNumber'] }}">{{ ticket['TicketNumber'] }}</a></td>
+                <td>{{ ticket['TicketContent'] }}</td>
+                <td>{{ ticket['State'] }}</td>
+                <td>{{ ticket['Created'] }}</td>
+                <td>{{ ticket['Modified'] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <section>
+        <h1>Do you need to create a ticket?</h1>
+        <a href="/createticket.html">Create a New Ticket</a>
+    </section>
+</body>
+</html>

@@ -6,7 +6,7 @@ def connect_to_database():
             host='localhost',
             user='root',
             password='root',
-            database='UserDB',
+            database='ticketsystem',
             auth_plugin='mysql_native_password'
         )
         print("Connected to MySQL database")
