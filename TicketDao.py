@@ -39,7 +39,7 @@ class TicketDao:
         except mysql.connector.Error as err:
             print(f"Error updating ticket: {err}")
 
-    def add_comment_to_ticket(self, ticket_number, comment):
+    def add_comment(self, ticket_number, comment):
         try:
             cursor = self.conn.cursor()
             insert_query = "INSERT INTO TicketComment (TicketNumber, CommentContent) VALUES (%s, %s)"
@@ -87,27 +87,25 @@ class TicketDao:
             print(f"Error fetching user tickets: {err}")
             return None
 
-    def get_newest_unused_ticket_number(self):
+    def create_ticket(self, content, created_by, created_date):
         try:
+            from app import user_dao
+            # Fetch the newest unused ticket number
             cursor = self.conn.cursor()
             cursor.execute("SELECT MAX(TicketNumber) FROM Ticket")
-            newest_ticket_number = cursor.fetchone()[0]
+            newest_ticket_number = cursor.fetchone()[0] or 0
             cursor.close()
-            return newest_ticket_number
-        except mysql.connector.Error as err:
-            print(f"Error fetching newest unused ticket number: {err}")
-            return None
-
-    def create_ticket(self, ticket_number, content, created_by, created_date):
-        try:
-            # Import user_dao locally within the function
-            from app import user_dao
-            cursor = self.conn.cursor()
+            # Get user ID
             user_id = user_dao.get_user_id(created_by)
+            # Insert new ticket
+            cursor = self.conn.cursor()
             insert_query = "INSERT INTO Ticket (TicketNumber, TicketContent, UserID, Created) VALUES (%s, %s, %s, %s)"
-            cursor.execute(insert_query, (ticket_number, content, user_id, created_date))
+            cursor.execute(insert_query, (newest_ticket_number + 1, content, user_id, created_date))
             self.conn.commit()
             cursor.close()
+
             print("Ticket created successfully")
+            return True
         except mysql.connector.Error as err:
             print(f"Error creating ticket: {err}")
+            return False

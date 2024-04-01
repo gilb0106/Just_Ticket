@@ -40,7 +40,7 @@ def show_tickets():
         tickets = ticket_dao.get_tickets()
         if tickets is None:
             return "No tickets found"
-        return render_template('admindashboard.html',
+        return render_template('agentdashboard.html',
                                tickets=tickets,
                                headers=['Ticket #', 'Content', 'State', 'Created Date', 'Modified Date'])
     else:
@@ -53,7 +53,7 @@ def show_user_tickets():
         tickets = ticket_dao.get_user_tickets(user_id)  # Get tickets by user
         if tickets is None:
             return "No tickets found"
-        return render_template('userdashboard.html',
+        return render_template('customerdashboard.html',
                                tickets=tickets,
                                headers=['Ticket #', 'Content', 'State', 'Created Date', 'Modified Date'])
     else:
@@ -84,7 +84,7 @@ def update_ticket():
 
         ticket_dao.update_ticket(ticket_number, content, state)
 
-        ticket_dao.add_comment_to_ticket(ticket_number, comment)
+        ticket_dao.add_comment(ticket_number, comment)
 
         return redirect(url_for('ticket_detail', ticket_number=ticket_number))
 
@@ -101,11 +101,10 @@ def create_ticket():
             created_by = session['username']
             created_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-            newest_ticket_number = ticket_dao.get_newest_unused_ticket_number() + 1
-
-            ticket_dao.create_ticket(newest_ticket_number, content, created_by, created_date)
-
-            return redirect(url_for('show_user_tickets'))
+            if ticket_dao.create_ticket(content, created_by, created_date):
+                return redirect(url_for('show_user_tickets'))
+            else:
+                return "Failed to create ticket"
     else:
         return redirect(url_for('login'))
 
