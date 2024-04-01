@@ -111,5 +111,3 @@ class TicketDao:
             print("Ticket created successfully")
         except mysql.connector.Error as err:
             print(f"Error creating ticket: {err}")
-
-
