@@ -31,15 +31,18 @@
         <input type="text" id="comment" name="comment"><br><br>
 
         <h2>All Ticket Updates</h2>
-        {% if comments %}
-        <ul>
-            {% for comment in comments|sort(attribute='CommentDate') %}
-            <li>{{ comment['CommentContent'] }} ({{ comment['CommentDate'] }})</li>
-            {% endfor %}
-        </ul>
-        {% else %}
-        <p>No comments yet</p>
-        {% endif %}
+{% if comments %}
+<ul>
+    {% for comment in comments|sort(attribute='CommentDate') %}
+    <li>
+<p>{{ comment['Username'] }}{% if comment.get('RoleName') %} ({{ comment['RoleName'] }}){% endif %} - {{ comment['CommentDate'] }}</p>
+        <p>{{ comment['CommentContent'] }}</p>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>No comments yet</p>
+{% endif %}
 
         <input type="submit" value="Update Ticket">
     </form>

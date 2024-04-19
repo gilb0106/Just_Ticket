@@ -1,14 +1,21 @@
 from flask import Flask, render_template, request, redirect, url_for, session
-from DBConnectUser import connect_to_database as connect_user_database, close_database_connection as close_user_database_connection
-from DBConnectTicket import connect_to_database as connect_ticket_database, close_database_connection as close_ticket_database_connection
-from TicketDao import *
-from UserDao import *
+
+from DBConnectUser import connect_to_database
+from UserDao import UserDAO
+from TicketDao import TicketDao
 import datetime
 
 app = Flask(__name__)
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
-user_dao = UserDAO(connect_user_database())
-ticket_dao = TicketDao(connect_ticket_database())
+
+# Create database connections
+user_conn = connect_to_database()
+ticket_conn = connect_to_database()
+
+# Instantiate DAOs with database connections
+user_dao = UserDAO(user_conn)
+ticket_dao = TicketDao(ticket_conn)
+
 
 @app.route('/')
 def home():
@@ -50,7 +57,7 @@ def show_tickets():
 def show_user_tickets():
     if 'username' in session:
         user_id = user_dao.get_user_id(session['username'])
-        tickets = ticket_dao.get_user_tickets(user_id)  # Get tickets by user
+        tickets = ticket_dao.get_user_tickets(user_id)
         if tickets is None:
             return "No tickets found"
         return render_template('customerdashboard.html',
@@ -64,11 +71,19 @@ def ticket_detail():
     ticket_number = request.args.get('ticket_number')
     try:
         ticket_details = ticket_dao.get_ticket_details(ticket_number)
+        print("Ticket details:", ticket_details)  # Add this line for debugging
         if ticket_details:
             user_id = ticket_details['UserID']
-            username = user_dao.get_username_by_id(user_id)
-            comments = ticket_dao.get_ticket_comments(ticket_number)
-            return render_template('ticketDetail.html', ticket=ticket_details, username=username, comments=comments)
+            user_info = user_dao.get_user_info(user_id)
+            print("User info:", user_info)  # Add this line for debugging
+            if user_info:
+                username = user_info['Username']
+                role_name = user_info
+                comments = ticket_dao.get_ticket_comments(ticket_number)
+                return render_template('ticketDetail.html', ticket=ticket_details, username=username,
+                                       role_name=role_name, comments=comments)
+            else:
+                return f"User info not found for user ID: {user_id}"
         else:
             return f"Ticket with number {ticket_number} not found."
     except Exception as e:
@@ -81,11 +96,10 @@ def update_ticket():
         content = request.form['content']
         state = request.form['state']
         comment = request.form['comment']
-
+        username = session.get('username')
+        user_id = user_dao.get_user_id(username)
         ticket_dao.update_ticket(ticket_number, content, state)
-
-        ticket_dao.add_comment(ticket_number, comment)
-
+        ticket_dao.add_comment(ticket_number, comment, user_id)
         return redirect(url_for('ticket_detail', ticket_number=ticket_number))
 
 @app.route('/createticket.html')
@@ -100,7 +114,6 @@ def create_ticket():
             content = request.form['content']
             created_by = session['username']
             created_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
             if ticket_dao.create_ticket(content, created_by, created_date):
                 return redirect(url_for('show_user_tickets'))
             else:
