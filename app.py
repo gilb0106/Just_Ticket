@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 
 from DBConnectUser import connect_to_database
+from UserActivityDAO import UserActivityDAO
 from UserDao import UserDAO
 from TicketDao import TicketDao
 import datetime
@@ -15,6 +16,7 @@ ticket_conn = connect_to_database()
 # Instantiate DAOs with database connections
 user_dao = UserDAO(user_conn)
 ticket_dao = TicketDao(ticket_conn)
+user_activity = UserActivityDAO(user_conn)
 
 
 @app.route('/')
@@ -31,9 +33,11 @@ def login():
         username = request.form['uname']
         password = request.form['psw']
         user = user_dao.authenticate_user(username, password)
+        user_id = user_dao.get_user_id(username)
         if user:
             session['username'] = user['Username']
             if user['RoleID'] == 1:
+                user_activity.log_activity(user_id,'login')
                 return redirect(url_for('show_tickets'))
             else:
                 return redirect(url_for('show_user_tickets'))
@@ -99,6 +103,7 @@ def update_ticket():
         user_id = user_dao.get_user_id(username)
         ticket_dao.update_ticket(ticket_number, content, state)
         ticket_dao.add_comment(ticket_number, comment, user_id)
+        user_activity.log_activity(user_id, 'ticket_update')
         return redirect(url_for('ticket_detail', ticket_number=ticket_number))
 
 @app.route('/createticket.html')
@@ -112,8 +117,10 @@ def create_ticket():
         if request.method == 'POST':
             content = request.form['content']
             created_by = session['username']
+            user_id = user_dao.get_user_id(created_by)
             created_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             if ticket_dao.create_ticket(content, created_by, created_date):
+                user_activity.log_activity(user_id, 'ticket_create')
                 return redirect(url_for('show_user_tickets'))
             else:
                 return "Failed to create ticket"
