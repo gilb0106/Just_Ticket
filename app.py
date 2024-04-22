@@ -91,6 +91,8 @@ def ticket_detail():
             return f"Ticket with number {ticket_number} not found."
     except Exception as e:
         return f"Error fetching ticket details: {str(e)}"
+
+
 @app.route('/update_ticket', methods=['POST'])
 def update_ticket():
     if request.method == 'POST':
@@ -102,14 +104,29 @@ def update_ticket():
         user_id = user_dao.get_user_id(username)
         print("Received state:", state)  # Print received state for debugging
         ticket_agent = None
-        if state == 'inprogress':
+
+        # Check if both state change and comment are present
+        if state and comment:
+            if state == 'inprogress':
+                user_activity.log_activity(user_id, 'ticket_comment')
+                user_activity.log_activity(user_id, 'ticket_inprogress')
+            elif state == 'closed':
+                user_activity.log_activity(user_id, 'ticket_comment')
+                user_activity.log_activity(user_id, 'ticket_closed')
+        elif state == 'inprogress':
             ticket_agent = user_id
+            user_activity.log_activity(user_id, 'ticket_inprogress')
         elif state == 'closed':
             ticket_agent = user_id
+            user_activity.log_activity(user_id, 'ticket_closed')
+
+        # Check if comment is not empty
+        if comment:
+            ticket_dao.add_comment(ticket_number, comment, user_id)
+            # Log activity only if a comment is added
+            user_activity.log_activity(user_id, 'ticket_comment')
 
         ticket_dao.update_ticket(ticket_number, content, state, ticket_agent)
-        ticket_dao.add_comment(ticket_number, comment, user_id)
-        user_activity.log_activity(user_id, 'ticket_update')
         return redirect(url_for('ticket_detail', ticket_number=ticket_number))
 
 @app.route('/createticket.html')
