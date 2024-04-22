@@ -6,14 +6,23 @@ class TicketDao:
 
     def get_tickets(self):
         try:
-            cursor = self.conn.cursor()
-            cursor.execute("SELECT * FROM ticket")
+            cursor = self.conn.cursor(dictionary=True)  # Return rows as dictionaries
+            cursor.execute("""
+                SELECT 
+                    ticket.TicketNumber, 
+                    ticket.TicketContent, 
+                    ticket.State, 
+                    ticket.Created, 
+                    ticket.Modified, 
+                    user.Username as TicketFor
+                FROM ticket
+                INNER JOIN user ON ticket.UserID = user.UserID
+            """)
             result = cursor.fetchall()
-            for row in result:
-                print(row)
             return result
         except mysql.connector.Error as err:
             print(f"Error executing SQL query: {err}")
+            return None
         finally:
             cursor.close()
 

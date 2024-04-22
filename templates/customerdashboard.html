@@ -11,9 +11,12 @@
     <table border="1">
         <thead>
             <tr>
-                {% for header in headers %}
-                <th>{{ header }}</th>
-                {% endfor %}
+                <th>Ticket Number</th>
+                <th>Content</th>
+                <th>State</th>
+                <th>Age</th>
+                <th>Created Date</th>
+                <th>Modified Date</th>
             </tr>
         </thead>
         <tbody>
@@ -22,11 +25,26 @@
                 <td><a href="/ticketDetail.html?ticket_number={{ ticket['TicketNumber'] }}">{{ ticket['TicketNumber'] }}</a></td>
                 <td>{{ ticket['TicketContent'] }}</td>
                 <td>{{ ticket['State'] }}</td>
+                <td id="age_{{ ticket['TicketNumber'] }}"></td>
                 <td>{{ ticket['Created'] }}</td>
                 <td>{{ ticket['Modified'] }}</td>
             </tr>
             {% endfor %}
         </tbody>
+        <script>
+        // JavaScript code to calculate age and populate table cells
+        {% for ticket in tickets %}
+        var createdDateStr = "{{ ticket['Created'] }}"; // Get created date string
+        var createdDate = new Date(createdDateStr); // Construct Date object for created date
+        var currentDate = new Date(); // Get current date
+        var formattedCurrentDate = currentDate.toISOString().slice(0, 19).replace('T', ' '); // Format current date to match created date format
+        var currentDate = new Date(formattedCurrentDate); // Convert formatted current date back to Date object
+            var ageInMilliseconds = formattedCurrentDate - createdDate;
+        var ageInDays = Math.floor((currentDate - createdDate) / (1000 * 60 * 60 * 24)); // Calculate age in days
+
+        document.getElementById("age_{{ ticket['TicketNumber'] }}").textContent = ageInDays + " days"; // Update table cell with age
+        {% endfor %}
+    </script>
     </table>
 
     <section>

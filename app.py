@@ -45,14 +45,13 @@ def login():
 def show_tickets():
     if 'username' in session:
         tickets = ticket_dao.get_tickets()
-        if tickets is None:
+        if not tickets:
             return "No tickets found"
         return render_template('agentdashboard.html',
                                tickets=tickets,
-                               headers=['Ticket #', 'Content', 'State', 'Created Date', 'Modified Date'])
+                               headers=['Ticket Number', 'Content', 'State', 'Created Date', 'Modified Date', 'Ticket For'])
     else:
         return redirect(url_for('login'))
-
 @app.route('/userdashboard.html')
 def show_user_tickets():
     if 'username' in session:

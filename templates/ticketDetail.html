@@ -4,45 +4,59 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Single Ticket</title>
-    <link rel="stylesheet" type="text/css" href="../static/stylesheet.css">
+    <link rel="stylesheet" type="text/css" href="../static/detail.css">
 </head>
 <body>
     <h1>Single Ticket</h1>
     <form action="/update_ticket" method="POST">
-        <label for="ticket_number">Ticket Number:</label>
-        <input type="text" id="ticket_number" name="ticket_number" value="{{ ticket['TicketNumber'] }}" readonly><br><br>
+        <div class="flex-container">
+            <div class="flex-item">
+                <label for="ticket_number">Ticket Number:</label>
+                <input type="text" id="ticket_number" name="ticket_number" value="{{ ticket['TicketNumber'] }}" readonly>
+            </div>
+            <div class="flex-item">
+                <label for="created_by">Created by:</label>
+                <input type="text" id="created_by" name="created_by" value="{{ username }}" readonly>
+            </div>
+        </div>
+
+        <div class="flex-container">
+            <div class="flex-item">
+                <label for="state">State:</label>
+                <input type="text" id="state" name="state" value="{{ ticket['State'] }}">
+            </div>
+        </div>
+
+        <div class="flex-container">
+            <div class="flex-item">
+                <label for="created_date">Created Date:</label>
+                <input type="text" id="created_date" name="created_date" value="{{ ticket['Created'] }}" readonly>
+            </div>
+            <div class="flex-item">
+                <label for="modified_date">Modified Date:</label>
+                <input type="text" id="modified_date" name="modified_date" value="{{ ticket['Modified'] }}" readonly>
+            </div>
+        </div>
 
         <label for="content">Content:</label>
-        <input type="text" id="content" name="content" value="{{ ticket['TicketContent'] }}"><br><br>
-
-        <label for="state">State:</label>
-        <input type="text" id="state" name="state" value="{{ ticket['State'] }}"><br><br>
-
-        <label for="created_date">Created Date:</label>
-        <input type="text" id="created_date" name="created_date" value="{{ ticket['Created'] }}" readonly><br><br>
-
-        <label for="modified_date">Modified Date:</label>
-        <input type="text" id="modified_date" name="modified_date" value="{{ ticket['Modified'] }}" readonly><br><br>
-
-        <label for="created_by">Created by:</label>
-        <input type="text" id="created_by" name="created_by" value="{{ username }}" readonly><br><br>
+        <textarea id="content" name="content" rows="4">{{ ticket['TicketContent'] }}</textarea>
 
         <label for="comment">Update Ticket:</label>
-        <input type="text" id="comment" name="comment"><br><br>
+        <input type="text" id="comment" name="comment">
 
         <h2>All Ticket Updates</h2>
-{% if comments %}
-<ul>
-    {% for comment in comments|sort(attribute='CommentDate') %}
-    <li>
-<p>{{ comment['Username'] }}{% if comment.get('RoleName') %} ({{ comment['RoleName'] }}){% endif %} - {{ comment['CommentDate'] }}</p>
-        <p>{{ comment['CommentContent'] }}</p>
-    </li>
-    {% endfor %}
-</ul>
-{% else %}
-<p>No comments yet</p>
-{% endif %}
+        {% if comments %}
+        <ul>
+            {% for comment in comments|sort(attribute='CommentDate') %}
+            <li>
+                <p>{{ comment['Username'] }}{% if comment.get('RoleName') %} ({{ comment['RoleName'] }}){% endif %} - {{ comment['CommentDate'] }}</p>
+                <p>{{ comment['CommentContent'] }}</p>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>No comments yet</p>
+        {% endif %}
 
         <input type="submit" value="Update Ticket">
     </form>
