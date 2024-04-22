@@ -19,12 +19,15 @@
                 <input type="text" id="created_by" name="created_by" value="{{ username }}" readonly>
             </div>
         </div>
+<div class="flex-item">
+    <label for="state">State:</label>
+    <select id="state" name="state">
+        <option value="open" {% if ticket['State'] == 'open' %} selected {% endif %}>Open</option>
+        <option value="inprogress" {% if ticket['State'] == 'inprogress' %} selected {% endif %}>In Progress</option>
+        <option value="closed" {% if ticket['State'] == 'closed' %} selected {% endif %}>Closed</option>
+    </select>
+</div>
 
-        <div class="flex-container">
-            <div class="flex-item">
-                <label for="state">State:</label>
-                <input type="text" id="state" name="state" value="{{ ticket['State'] }}">
-            </div>
         </div>
 
         <div class="flex-container">

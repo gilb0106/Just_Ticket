@@ -40,11 +40,11 @@ class TicketDao:
             print(f"Error fetching ticket details: {err}")
             return None
 
-    def update_ticket(self, ticket_number, content, state):
+    def update_ticket(self, ticket_number, content, state, ticket_agent=None):
         try:
             cursor = self.conn.cursor()
-            update_query = "UPDATE ticket SET TicketContent = %s, State = %s WHERE TicketNumber = %s"
-            cursor.execute(update_query, (content, state, ticket_number))
+            update_query = "UPDATE ticket SET TicketContent = %s, State = %s, TicketAgent = %s WHERE TicketNumber = %s"
+            cursor.execute(update_query, (content, state, ticket_agent, ticket_number))
             self.conn.commit()
             cursor.close()
             print("Ticket updated successfully")
