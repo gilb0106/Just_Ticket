@@ -62,12 +62,17 @@ DROP TABLE IF EXISTS `ticketsystem`.`ticket` ;
 CREATE TABLE IF NOT EXISTS `ticketsystem`.`ticket` (
   `TicketNumber` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `UserID` INT NULL DEFAULT NULL,
+  `TicketAgent` INT NULL DEFAULT NULL,
   `TicketContent` VARCHAR(255) NOT NULL,
   `State` ENUM('open', 'inprogress', 'closed') NOT NULL,
   `Created` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
   `Modified` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`TicketNumber`),
   INDEX `fk_ticket_user` (`UserID` ASC) VISIBLE,
+  INDEX `fk_ticket_agent` (`TicketAgent` ASC) VISIBLE,
+  CONSTRAINT `fk_ticket_agent`
+    FOREIGN KEY (`TicketAgent`)
+    REFERENCES `ticketsystem`.`user` (`UserID`),
   CONSTRAINT `fk_ticket_user`
     FOREIGN KEY (`UserID`)
     REFERENCES `ticketsystem`.`user` (`UserID`))
@@ -98,7 +103,7 @@ CREATE TABLE IF NOT EXISTS `ticketsystem`.`ticketcomment` (
     FOREIGN KEY (`UserID`)
     REFERENCES `ticketsystem`.`user` (`UserID`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 17
+AUTO_INCREMENT = 26
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -111,7 +116,7 @@ DROP TABLE IF EXISTS `ticketsystem`.`useractivity` ;
 CREATE TABLE IF NOT EXISTS `ticketsystem`.`useractivity` (
   `ActivityID` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `UserID` INT NOT NULL,
-  `ActivityType` ENUM('login', 'logout', 'ticket_create', 'ticket_update') NOT NULL,
+  `ActivityType` ENUM('login', 'logout', 'ticket_create', 'ticket_comment', 'ticket_inprogress', 'ticket_closed') NOT NULL,
   `ActivityDate` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`ActivityID`),
   INDEX `fk_useractivity_user` (`UserID` ASC) VISIBLE,
@@ -119,7 +124,7 @@ CREATE TABLE IF NOT EXISTS `ticketsystem`.`useractivity` (
     FOREIGN KEY (`UserID`)
     REFERENCES `ticketsystem`.`user` (`UserID`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 5
+AUTO_INCREMENT = 43
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
