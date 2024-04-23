@@ -23,6 +23,11 @@ user_activity = UserActivityDAO(user_conn)
 def home():
     return render_template('index.html')
 
+@app.route('/logout')
+def logout():
+    session.pop('username', None)
+    return redirect(url_for('home'))
+
 @app.route('/register.html')
 def register():
     return render_template('register.html')
@@ -45,7 +50,7 @@ def login():
             return "Invalid username or password"
     return render_template('login.html')
 
-@app.route('/admindashboard.html')
+@app.route('/agentdashboard.html')
 def show_tickets():
     if 'username' in session:
         tickets = ticket_dao.get_tickets()
@@ -56,7 +61,7 @@ def show_tickets():
                                headers=['Ticket Number', 'Content', 'State', 'Created Date', 'Modified Date', 'Ticket For'])
     else:
         return redirect(url_for('login'))
-@app.route('/userdashboard.html')
+@app.route('/customerdashboard.html')
 def show_user_tickets():
     if 'username' in session:
         user_id = user_dao.get_user_id(session['username'])
@@ -81,7 +86,7 @@ def ticket_detail():
             print("User info:", user_info)  # Add this line for debugging
             if user_info:
                 username = user_info['Username']
-                role_name = user_info
+                role_name = user_dao.get_user_role(session['username'])
                 comments = ticket_dao.get_ticket_comments(ticket_number)
                 return render_template('ticketDetail.html', ticket=ticket_details, username=username,
                                        role_name=role_name, comments=comments)
@@ -98,27 +103,39 @@ def update_ticket():
     if request.method == 'POST':
         ticket_number = request.form['ticket_number']
         content = request.form['content']
-        state = request.form['state']
+        new_state = request.form['state']
         comment = request.form['comment']
         username = session.get('username')
         user_id = user_dao.get_user_id(username)
-        print("Received state:", state)  # Print received state for debugging
+        user_role = user_dao.get_user_role(username)  # Assuming you have a method to get the user's role
+
+        print("Received state:", new_state)  # Print received state for debugging
         ticket_agent = None
 
-        # Check if both state change and comment are present
-        if state and comment:
-            if state == 'inprogress':
-                user_activity.log_activity(user_id, 'ticket_comment')
+        previous_state = ticket_dao.get_ticket_state(ticket_number)
+
+        # Check if the user has the necessary permissions based on their role
+        if user_role != 'agent' and previous_state != new_state:
+            return "You don't have permission to change the ticket state."
+
+
+        if new_state != previous_state:
+            # Log activity for state change
+            if new_state == 'inprogress':
                 user_activity.log_activity(user_id, 'ticket_inprogress')
-            elif state == 'closed':
-                user_activity.log_activity(user_id, 'ticket_comment')
+            elif new_state == 'closed':
                 user_activity.log_activity(user_id, 'ticket_closed')
-        elif state == 'inprogress':
-            ticket_agent = user_id
-            user_activity.log_activity(user_id, 'ticket_inprogress')
-        elif state == 'closed':
-            ticket_agent = user_id
-            user_activity.log_activity(user_id, 'ticket_closed')
+
+            # Update the ticket agent if necessary
+            if new_state in ['inprogress', 'closed']:
+                ticket_agent = user_id
+        else:  # State remains the same
+            # Check if comment is not empty
+            if comment:
+                ticket_dao.add_comment(ticket_number, comment, user_id)
+                # Log activity only if a comment is added
+                user_activity.log_activity(user_id, 'ticket_comment')
+            return redirect(url_for('ticket_detail', ticket_number=ticket_number))
 
         # Check if comment is not empty
         if comment:
@@ -126,8 +143,11 @@ def update_ticket():
             # Log activity only if a comment is added
             user_activity.log_activity(user_id, 'ticket_comment')
 
-        ticket_dao.update_ticket(ticket_number, content, state, ticket_agent)
+        # Update the ticket with the new content, state, and agent
+        ticket_dao.update_ticket(ticket_number, content, new_state, ticket_agent)
+
         return redirect(url_for('ticket_detail', ticket_number=ticket_number))
+
 
 @app.route('/createticket.html')
 def create_ticket_page():

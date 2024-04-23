@@ -7,7 +7,13 @@
     <link rel="stylesheet" type="text/css" href="../static/detail.css">
 </head>
 <body>
+<button onclick="goBack('{{ role_name }}')">Back</button>
     <h1>Single Ticket</h1>
+ <p>Role Name: {{ role_name }}</p>
+    {% if error_message %}
+    <p style="color: red;">{{ error_message }}</p>
+    {% endif %}
+
     <form action="/update_ticket" method="POST">
         <div class="flex-container">
             <div class="flex-item">
@@ -63,5 +69,14 @@
 
         <input type="submit" value="Update Ticket">
     </form>
+    <script>
+        function goBack(role) {
+            if (role !== 'agent') {
+                window.location.href = 'customerdashboard.html';
+            } else {
+                window.location.href = 'agentdashboard.html';
+            }
+        }
+    </script>
 </body>
 </html>

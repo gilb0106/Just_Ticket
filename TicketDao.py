@@ -39,7 +39,17 @@ class TicketDao:
         except mysql.connector.Error as err:
             print(f"Error fetching ticket details: {err}")
             return None
-
+    def get_ticket_state(self, ticket_number):
+        try:
+            cursor = self.conn.cursor()
+            query = "SELECT State FROM ticket WHERE TicketNumber = %s"
+            cursor.execute(query, (ticket_number,))
+            state = cursor.fetchone()
+            cursor.close()
+            return state[0] if state else None
+        except mysql.connector.Error as err:
+            print(f"Error fetching ticket state: {err}")
+            return None
     def update_ticket(self, ticket_number, content, state, ticket_agent=None):
         try:
             cursor = self.conn.cursor()
