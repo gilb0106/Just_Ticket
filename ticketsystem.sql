@@ -28,7 +28,6 @@ CREATE TABLE IF NOT EXISTS `ticketsystem`.`userrole` (
   `RoleName` ENUM('agent', 'customer') NOT NULL,
   PRIMARY KEY (`RoleID`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 3
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -49,7 +48,6 @@ CREATE TABLE IF NOT EXISTS `ticketsystem`.`user` (
     FOREIGN KEY (`RoleID`)
     REFERENCES `ticketsystem`.`userrole` (`RoleID`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 5
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -77,7 +75,6 @@ CREATE TABLE IF NOT EXISTS `ticketsystem`.`ticket` (
     FOREIGN KEY (`UserID`)
     REFERENCES `ticketsystem`.`user` (`UserID`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 100011
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -103,7 +100,6 @@ CREATE TABLE IF NOT EXISTS `ticketsystem`.`ticketcomment` (
     FOREIGN KEY (`UserID`)
     REFERENCES `ticketsystem`.`user` (`UserID`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 26
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
@@ -124,7 +120,6 @@ CREATE TABLE IF NOT EXISTS `ticketsystem`.`useractivity` (
     FOREIGN KEY (`UserID`)
     REFERENCES `ticketsystem`.`user` (`UserID`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 43
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
