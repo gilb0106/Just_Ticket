@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="../static/stylesheet.css">
     <title>Ticket Query</title>
 </head>
 <body>
@@ -10,7 +11,6 @@
 <form id="queryForm" action="{{ url_for('query_tickets') }}" method="post">
     <label for="state">State:</label>
     <select name="state" id="state">
-        <option value="">All</option>
         <option value="open">Open</option>
         <option value="inprogress">In Progress</option>
         <option value="closed">Closed</option>
@@ -21,7 +21,6 @@
     <input type="date" id="modified_date" name="modified_date"><br><br>
     <button type="submit">Query</button>
 </form>
-    <button type="button" id="exportBtn" style="display: none;">Export CSV</button>
     <div id="ticketData"></div>
 
     <script>
@@ -41,43 +40,6 @@
                     document.getElementById('exportBtn').style.display = 'none';
                 }
             });
-        });
-
-        document.getElementById('exportBtn').addEventListener('click', function() {
-            // Get the table element
-            var table = document.getElementById('ticketTable');
-
-            // Initialize empty CSV string
-            var csv = '';
-
-            // Loop through rows
-            for (var i = 0; i < table.rows.length; i++) {
-                var row = table.rows[i];
-                // Loop through cells
-                for (var j = 0; j < row.cells.length; j++) {
-                    // Append cell value to CSV with comma separator
-                    csv += '"' + row.cells[j].innerText.replace(/"/g, '""') + '",';
-                }
-                // Add newline after each row
-                csv += '\n';
-            }
-
-            // Create Blob object containing the CSV data
-            var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-
-            // Create temporary link with Blob URL
-            var link = document.createElement('a');
-            if (link.download !== undefined) { // Feature detection
-                var url = URL.createObjectURL(blob);
-                link.setAttribute('href', url);
-                link.setAttribute('download', 'tickets.csv');
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            } else {
-                alert('Your browser does not support automatic download. Please right-click the link and select "Save link as" to download the file.');
-            }
         });
     </script>
 </body>

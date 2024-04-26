@@ -7,7 +7,7 @@
 </head>
 <body>
     <h2>Ticket Data</h2>
-    <table border="1">
+    <table id="ticketTable" border="1">
         <thead>
             <tr>
                 <th>Ticket Number</th>
@@ -30,6 +30,52 @@
             </tr>
             {% endfor %}
         </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="6" style="text-align: right;">
+                    <button id="exportBtn">Export CSV</button>
+                </td>
+            </tr>
+        </tfoot>
     </table>
+
+    <script>
+        document.getElementById('exportBtn').addEventListener('click', function() {
+            // Get the table element
+            var table = document.getElementById('ticketTable');
+
+            // Initialize empty CSV string
+            var csv = '';
+
+            // Loop through rows
+            for (var i = 0; i < table.rows.length; i++) {
+                var row = table.rows[i];
+                // Loop through cells
+                for (var j = 0; j < row.cells.length; j++) {
+                    // Append cell value to CSV with comma separator
+                    csv += '"' + row.cells[j].innerText.replace(/"/g, '""') + '",';
+                }
+                // Add newline after each row
+                csv += '\n';
+            }
+
+            // Create Blob object containing the CSV data
+            var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+
+            // Create temporary link with Blob URL
+            var link = document.createElement('a');
+            if (link.download !== undefined) { // Feature detection
+                var url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', 'tickets.csv');
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } else {
+                alert('Your browser does not support automatic download. Please right-click the link and select "Save link as" to download the file.');
+            }
+        });
+    </script>
 </body>
 </html>

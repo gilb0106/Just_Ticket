@@ -120,7 +120,7 @@ class TicketDao:
             print(f"Error creating ticket: {err}")
             return False
 
-    def query_tickets(self, states=None, created_date=None, modified_date=None):
+    def query_tickets(self, state=None, created_date=None, modified_date=None):
         # Establish a cursor to execute SQL queries
         cursor = self.conn.cursor()
 
@@ -140,6 +140,21 @@ class TicketDao:
                 user AS u ON t.TicketAgent = u.UserID
         """
 
+        # Initialize the WHERE clause
+        where_clause = []
+
+        # Add conditions to the WHERE clause based on input parameters
+        if state:
+            where_clause.append(f"t.State = '{state}'")
+        if created_date:
+            where_clause.append(f"DATE(t.Created) = '{created_date}'")
+        if modified_date:
+            where_clause.append(f"DATE(t.Modified) = '{modified_date}'")
+
+        # Construct the final SQL query
+        if where_clause:
+            query += " WHERE " + " AND ".join(where_clause)
+
         # Execute the SQL query
         cursor.execute(query)
 
@@ -151,17 +166,3 @@ class TicketDao:
 
         # Return the queried tickets
         return tickets
-
-    def export_tickets_csv(self, tickets, filename='tickets.csv'):
-        # Define the CSV file headers
-        headers = ['TicketNumber', 'Content', 'State', 'CreatedDate', 'ModifiedDate', 'TicketFor']
-
-        # Write ticket data to a CSV file
-        with open(filename, 'w', newline='') as csvfile:
-            writer = csv.writer(csvfile)
-            # Write headers to the CSV file
-            writer.writerow(headers)
-            # Write ticket data to the CSV file
-            writer.writerows(tickets)
-
-        return filename
