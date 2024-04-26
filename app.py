@@ -32,8 +32,16 @@ def logout():
 def register():
     return render_template('register.html')
 
+
 @app.route('/login.html', methods=['GET', 'POST'])
 def login():
+    if 'username' in session:
+        # If the user is already logged in, redirect to the appropriate dashboard
+        if user_dao.get_user_role(session['username']) == 1:
+            return redirect(url_for('dashboard', dashboard_type='agent'))
+        else:
+            return redirect(url_for('dashboard', dashboard_type='customer'))
+
     if request.method == 'POST':
         username = request.form['uname']
         password = request.form['psw']
@@ -42,35 +50,33 @@ def login():
         if user:
             session['username'] = user['Username']
             if user['RoleID'] == 1:
-                user_activity.log_activity(user_id,'login')
-                return redirect(url_for('show_tickets'))
+                user_activity.log_activity(user_id, 'login')
+                return redirect(url_for('dashboard', dashboard_type='agent'))
             else:
-                return redirect(url_for('show_user_tickets'))
+                return redirect(url_for('dashboard', dashboard_type='customer'))
         else:
             return "Invalid username or password"
     return render_template('login.html')
 
-@app.route('/agentdashboard.html')
-def show_tickets():
+
+@app.route('/dashboard.html')
+def dashboard():
     if 'username' in session:
-        tickets = ticket_dao.get_tickets()
+        dashboard_type = request.args.get('dashboard_type')
+        user_id = user_dao.get_user_id(session['username'])
+        if dashboard_type == 'agent':
+            tickets = ticket_dao.get_tickets()
+            headers = ['Ticket Number', 'Content', 'State', 'Created Date', 'Modified Date', 'Ticket For']
+        elif dashboard_type == 'customer':
+            tickets = ticket_dao.get_user_tickets(user_id)
+            headers = ['Ticket #', 'Content', 'State', 'Age','Created Date', 'Modified Date']
+        else:
+            return "Invalid dashboard type"
+
         if not tickets:
             return "No tickets found"
-        return render_template('agentdashboard.html',
-                               tickets=tickets,
-                               headers=['Ticket Number', 'Content', 'State', 'Created Date', 'Modified Date', 'Ticket For'])
-    else:
-        return redirect(url_for('login'))
-@app.route('/customerdashboard.html')
-def show_user_tickets():
-    if 'username' in session:
-        user_id = user_dao.get_user_id(session['username'])
-        tickets = ticket_dao.get_user_tickets(user_id)
-        if tickets is None:
-            return "No tickets found"
-        return render_template('customerdashboard.html',
-                               tickets=tickets,
-                               headers=['Ticket #', 'Content', 'State', 'Created Date', 'Modified Date'])
+
+        return render_template('dashboard.html', tickets=tickets, headers=headers)
     else:
         return redirect(url_for('login'))
 
@@ -79,11 +85,9 @@ def ticket_detail():
     ticket_number = request.args.get('ticket_number')
     try:
         ticket_details = ticket_dao.get_ticket_details(ticket_number)
-        print("Ticket details:", ticket_details)  # Add this line for debugging
         if ticket_details:
             user_id = ticket_details['UserID']
             user_info = user_dao.get_user_info(user_id)
-            print("User info:", user_info)  # Add this line for debugging
             if user_info:
                 username = user_info['Username']
                 role_name = user_dao.get_user_role(session['username'])
@@ -107,14 +111,12 @@ def update_ticket():
         comment = request.form['comment']
         username = session.get('username')
         user_id = user_dao.get_user_id(username)
-        user_role = user_dao.get_user_role(username)  # Assuming you have a method to get the user's role
+        user_role = user_dao.get_user_role(username)
 
-        print("Received state:", new_state)  # Print received state for debugging
         ticket_agent = None
 
         previous_state = ticket_dao.get_ticket_state(ticket_number)
 
-        # Check if the user has the necessary permissions based on their role
         if user_role != 'agent' and previous_state != new_state:
             return "You don't have permission to change the ticket state."
 
@@ -126,18 +128,18 @@ def update_ticket():
             elif new_state == 'closed':
                 user_activity.log_activity(user_id, 'ticket_closed')
 
-            # Update the ticket agent if necessary
+            # Update the ticket agent
             if new_state in ['inprogress', 'closed']:
                 ticket_agent = user_id
         else:  # State remains the same
-            # Check if comment is not empty
+            # Check if comment is empty
             if comment:
                 ticket_dao.add_comment(ticket_number, comment, user_id)
                 # Log activity only if a comment is added
                 user_activity.log_activity(user_id, 'ticket_comment')
             return redirect(url_for('ticket_detail', ticket_number=ticket_number))
 
-        # Check if comment is not empty
+        # Check if comment is empty
         if comment:
             ticket_dao.add_comment(ticket_number, comment, user_id)
             # Log activity only if a comment is added

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" type="text/css" href="../static/stylesheet.css">
+</head>
+<body>
+    <form action="/logout" method="GET">
+        <button type="submit">Logout</button>
+    </form>
+    <h1>All Tickets</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                {% for header in headers %}
+                <th>{{ header }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for ticket in tickets %}
+            <tr>
+                <td><a href="/ticketDetail.html?ticket_number={{ ticket['TicketNumber'] }}">{{ ticket['TicketNumber'] }}</a></td>
+                <td>{{ ticket['TicketContent'] }}</td>
+                <td>{{ ticket['State'] }}</td>
+                <td id="age_{{ ticket['TicketNumber'] }}"></td>
+                <td>{{ ticket['Created'] }}</td>
+                <td>{{ ticket['Modified'] }}</td>
+                {% if 'TicketFor' in ticket %}
+                <td>{{ ticket['TicketFor'] }}</td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script>
+        {% for ticket in tickets %}
+        var createdDateStr = "{{ ticket['Created'] }}";
+        var createdDate = new Date(createdDateStr);
+        var currentDate = new Date();
+        var formattedCurrentDate = currentDate.toISOString().slice(0, 19).replace('T', ' ');
+        var currentDate = new Date(formattedCurrentDate);
+        var ageInDays = Math.floor((currentDate - createdDate) / (1000 * 60 * 60 * 24));
+
+        document.getElementById("age_{{ ticket['TicketNumber'] }}").textContent = ageInDays + " days";
+        {% endfor %}
+    </script>
+</body>
+</html>
