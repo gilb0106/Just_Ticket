@@ -170,5 +170,48 @@ def create_ticket():
     else:
         return redirect(url_for('login'))
 
+
+@app.route('/query_ticket.html', methods=['GET', 'POST'])
+def query_ticket():
+    if 'username' in session:  # Ensure user is logged in
+        if request.method == 'POST':
+            # Extract form data
+            state = request.form.get('state')
+            created_date = request.form.get('created_date')
+            modified_date = request.form.get('modified_date')
+
+            # Query tickets based on the provided filters
+            filtered_tickets = ticket_dao.query_tickets(state, created_date, modified_date)
+
+            if filtered_tickets:
+                # Render the ticket data as HTML
+                return render_template('ticket_data.html', tickets=filtered_tickets)
+            else:
+                return "No tickets found matching the criteria."
+        else:
+            return render_template('query_ticket.html')
+    else:
+        return redirect(url_for('login'))
+
+@app.route('/query_tickets', methods=['POST'])
+def query_tickets():
+    if 'username' in session:  # Ensure user is logged in
+        # Extract form data
+        state = request.form.get('state')
+        created_date = request.form.get('created_date')
+        modified_date = request.form.get('modified_date')
+
+        # Query tickets based on the provided filters
+        filtered_tickets = ticket_dao.query_tickets(state, created_date, modified_date)
+
+        if filtered_tickets:
+            # Render the ticket data as HTML
+            return render_template('ticket_data.html', tickets=filtered_tickets)
+        else:
+            return "No tickets found matching the criteria."
+    else:
+        return redirect(url_for('login'))@app.route('/query_tickets', methods=['POST'])
+
+
 if __name__ == '__main__':
     app.run()

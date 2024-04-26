@@ -1,5 +1,5 @@
 import mysql.connector
-
+import csv
 class TicketDao:
     def __init__(self, conn):
         self.conn = conn
@@ -119,3 +119,49 @@ class TicketDao:
         except mysql.connector.Error as err:
             print(f"Error creating ticket: {err}")
             return False
+
+    def query_tickets(self, states=None, created_date=None, modified_date=None):
+        # Establish a cursor to execute SQL queries
+        cursor = self.conn.cursor()
+
+        # Base SQL query to select tickets with necessary joins
+        query = """
+            SELECT 
+                t.TicketNumber, 
+                t.TicketContent AS Content, 
+                t.State, 
+                t.Created AS CreatedDate, 
+                t.Modified AS ModifiedDate, 
+                TIMESTAMPDIFF(DAY, t.Created, NOW()) AS Age,
+                CONCAT(u.Username) AS AgentUsername
+            FROM 
+                ticket AS t
+            LEFT JOIN 
+                user AS u ON t.TicketAgent = u.UserID
+        """
+
+        # Execute the SQL query
+        cursor.execute(query)
+
+        # Fetch all the selected rows
+        tickets = cursor.fetchall()
+
+        # Close the cursor
+        cursor.close()
+
+        # Return the queried tickets
+        return tickets
+
+    def export_tickets_csv(self, tickets, filename='tickets.csv'):
+        # Define the CSV file headers
+        headers = ['TicketNumber', 'Content', 'State', 'CreatedDate', 'ModifiedDate', 'TicketFor']
+
+        # Write ticket data to a CSV file
+        with open(filename, 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            # Write headers to the CSV file
+            writer.writerow(headers)
+            # Write ticket data to the CSV file
+            writer.writerows(tickets)
+
+        return filename
