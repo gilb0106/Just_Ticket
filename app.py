@@ -35,12 +35,7 @@ def register():
 
 @app.route('/login.html', methods=['GET', 'POST'])
 def login():
-    if 'username' in session:
-        # If the user is already logged in, redirect to the appropriate dashboard
-        if user_dao.get_user_role(session['username']) == 1:
-            return redirect(url_for('dashboard', dashboard_type='agent'))
-        else:
-            return redirect(url_for('dashboard', dashboard_type='customer'))
+
 
     if request.method == 'POST':
         username = request.form['uname']
