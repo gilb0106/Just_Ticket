@@ -44,6 +44,7 @@ def login():
         user_id = user_dao.get_user_id(username)
         if user:
             session['username'] = user['Username']
+            session['RoleID'] = user['RoleID']
             if user['RoleID'] == 1:
                 user_activity.log_activity(user_id, 'login')
                 return redirect(url_for('dashboard', dashboard_type='agent'))
@@ -151,7 +152,7 @@ def create_ticket_page():
     current_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     return render_template('createticket.html', current_date=current_date)
 
-@app.route('/create_ticket', methods=['POST'])
+@app.route('/create_ticket', methods=['GET', 'POST'])
 def create_ticket():
     if 'username' in session:
         if request.method == 'POST':
@@ -161,9 +162,12 @@ def create_ticket():
             created_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             if ticket_dao.create_ticket(content, created_by, created_date):
                 user_activity.log_activity(user_id, 'ticket_create')
-                return redirect(url_for('show_user_tickets'))
+                return redirect(url_for('dashboard', dashboard_type='customer'))
             else:
                 return "Failed to create ticket"
+        elif request.method == 'GET':
+            current_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            return render_template('createticket.html', current_date=current_date)
     else:
         return redirect(url_for('login'))
 
