@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, Response, flash
 
 from DBConnectUser import connect_to_database
 from UserActivityDAO import UserActivityDAO
@@ -35,8 +35,7 @@ def register():
 
 @app.route('/login.html', methods=['GET', 'POST'])
 def login():
-
-
+    error_message = None
     if request.method == 'POST':
         username = request.form['uname']
         password = request.form['psw']
@@ -45,33 +44,32 @@ def login():
         if user:
             session['username'] = user['Username']
             session['RoleID'] = user['RoleID']
+            session['RoleName'] = user['RoleName']
             if user['RoleID'] == 1:
                 user_activity.log_activity(user_id, 'login')
                 return redirect(url_for('dashboard', dashboard_type='agent'))
             else:
                 return redirect(url_for('dashboard', dashboard_type='customer'))
         else:
-            return "Invalid username or password"
-    return render_template('login.html')
+            error_message = "Invalid username or password"
+    return render_template('login.html', error_message=error_message)
 
 
 @app.route('/dashboard.html')
 def dashboard():
     if 'username' in session:
-        dashboard_type = request.args.get('dashboard_type')
-        user_id = user_dao.get_user_id(session['username'])
-        if dashboard_type == 'agent':
+        role_name = session.get('RoleName')
+        if role_name == 'agent':
             tickets = ticket_dao.get_tickets()
             headers = ['Ticket Number', 'Content', 'State', 'Age','Created Date',  'Modified Date', 'Ticket For']
-        elif dashboard_type == 'customer':
+        elif role_name == 'customer':
+            user_id = user_dao.get_user_id(session['username'])
             tickets = ticket_dao.get_user_tickets(user_id)
             headers = ['Ticket #', 'Content', 'State', 'Age','Created Date', 'Modified Date']
         else:
-            return "Invalid dashboard type"
-
+            return "Invalid role"
         if not tickets:
             return "No tickets found"
-
         return render_template('dashboard.html', tickets=tickets, headers=headers)
     else:
         return redirect(url_for('login'))
@@ -107,16 +105,15 @@ def update_ticket():
         comment = request.form['comment']
         username = session.get('username')
         user_id = user_dao.get_user_id(username)
-        user_role = user_dao.get_user_role(username)
+        user_role = session.get('RoleName')
 
         ticket_agent = None
 
         previous_state = ticket_dao.get_ticket_state(ticket_number)
 
         if user_role != 'agent' and previous_state != new_state:
-            return "You don't have permission to change the ticket state."
-
-
+            flash("You don't have permission to change the ticket state.", 'error')
+            return redirect(url_for('ticket_detail', ticket_number=ticket_number))
         if new_state != previous_state:
             # Log activity for state change
             if new_state == 'inprogress':
@@ -172,9 +169,12 @@ def create_ticket():
         return redirect(url_for('login'))
 
 
-@app.route('/query_ticket.html', methods=['GET', 'POST'])
+@app.route('/query_ticket.html', methods=['GET'])
 def query_ticket():
     if 'username' in session:  # Ensure user is logged in
+        role_id = session.get('RoleID')
+        role_name = session.get('RoleName')
+
         if request.method == 'POST':
             # Extract form data
             state = request.form.get('state')
@@ -186,13 +186,14 @@ def query_ticket():
 
             if filtered_tickets:
                 # Render the ticket data as HTML
-                return render_template('ticket_data.html', tickets=filtered_tickets)
+                return render_template('ticket_data.html', tickets=filtered_tickets, role_id=role_id, role_name=role_name)
             else:
                 return "No tickets found matching the criteria."
         else:
-            return render_template('query_ticket.html')
+            return render_template('query_ticket.html', role_id=role_id, role_name=role_name)
     else:
         return redirect(url_for('login'))
+
 
 @app.route('/query_tickets', methods=['POST'])
 def query_tickets():
@@ -207,12 +208,35 @@ def query_tickets():
 
         if filtered_tickets:
             # Render the ticket data as HTML
-            return render_template('ticket_data.html', tickets=filtered_tickets)
+            return render_template('ticket_data.html', tickets=filtered_tickets)  # Pass filtered_tickets to the template
         else:
             return "No tickets found matching the criteria."
     else:
-        return redirect(url_for('login'))@app.route('/query_tickets', methods=['POST'])
+        return redirect(url_for('login'))
 
+
+@app.route('/export_csv', methods=['POST'])
+def export_csv():
+    if 'username' in session:  # Ensure user is logged in
+        # Extract ticket data from the request form
+        tickets = request.form.getlist('tickets[]')
+
+        if tickets:
+            # Create CSV content
+            csv_content = "Ticket Number,Content,State,Created Date,Modified Date,Agent Username\n"
+            for ticket in tickets:
+                csv_content += ticket + "\n"
+
+            # Return CSV file as response
+            return Response(
+                csv_content,
+                mimetype="text/csv",
+                headers={"Content-disposition": "attachment; filename=tickets.csv"}
+            )
+        else:
+            return "No tickets selected for export."
+    else:
+        return redirect(url_for('login'))
 
 if __name__ == '__main__':
     app.run()

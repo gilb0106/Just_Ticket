@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="../static/css/stylesheet.css">
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <form action="/dashboard.html" method="GET">
+    <input type="hidden" name="dashboard_type" value="{{ role_name }}">
+    <button type="submit">Back</button>
+</form>
     <title>Ticket Query</title>
 </head>
 <body>

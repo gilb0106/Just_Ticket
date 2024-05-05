@@ -8,14 +8,20 @@
     <link rel="stylesheet" type="text/css" href="../static/css/detail.css">
 </head>
 <body>
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <ul>
+    {% for category, message in messages %}
+      <li class="{{ category }}">{{ message }}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
 <form action="/dashboard.html" method="GET">
     <input type="hidden" name="dashboard_type" value="{{ role_name }}">
     <button type="submit">Back</button>
 </form>
     <h1>Single Ticket</h1>
- <p>Role Name: {{ role_name }}</p>
-
-
     <form action="/update_ticket" method="POST">
         <div class="flex-container">
             <div class="flex-item">

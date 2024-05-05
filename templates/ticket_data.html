@@ -32,5 +32,11 @@
             {% endfor %}
         </tbody>
     </table>
+    <form id="exportForm" action="/export_csv" method="post">
+        {% for ticket in tickets %}
+            <input type="hidden" name="tickets[]" value="{{ ticket[0] }},{{ ticket[1] }},{{ ticket[2] }},{{ ticket[3] }},{{ ticket[4] }},{{ ticket[5] }}">
+        {% endfor %}
+        <button type="submit">Export to CSV</button>
+    </form>
 </body>
 </html>
