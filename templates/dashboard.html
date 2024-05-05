@@ -11,7 +11,7 @@
     <form action="/logout" method="GET">
         <button type="submit">Logout</button>
     </form>
-    <h1>All Tickets {{ role }} asd</h1>
+    <h1>All Tickets</h1>
     <table border="1">
         <thead>
             <tr>
@@ -37,7 +37,8 @@
         </tbody>
     </table>
 {% if session.RoleID != 1 %}
-    <a href="/create_ticket">Create Ticket</a>
+    <h1>Need to Create a ticket?</h1>
+    <a href="/create_ticket">Clink this link to Create Ticket</a>
 {% endif %}
 <script src="{{ url_for('static', filename='js/ageofcase.js') }}"></script>
 </body>
