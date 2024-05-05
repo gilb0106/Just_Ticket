@@ -25,7 +25,7 @@
                 <td><a href="/ticketDetail.html?ticket_number={{ ticket['TicketNumber'] }}">{{ ticket['TicketNumber'] }}</a></td>
                 <td>{{ ticket['TicketContent'] }}</td>
                 <td>{{ ticket['State'] }}</td>
-                <td id="age_{{ ticket['TicketNumber'] }}"></td>
+                <td id="age_{{ ticket['TicketNumber'] }}" data-created="{{ ticket['Created'] }}"></td>
                 <td>{{ ticket['Created'] }}</td>
                 <td>{{ ticket['Modified'] }}</td>
                 {% if 'TicketFor' in ticket %}
@@ -35,18 +35,6 @@
             {% endfor %}
         </tbody>
     </table>
-
-    <script>
-        {% for ticket in tickets %}
-        var createdDateStr = "{{ ticket['Created'] }}";
-        var createdDate = new Date(createdDateStr);
-        var currentDate = new Date();
-        var formattedCurrentDate = currentDate.toISOString().slice(0, 19).replace('T', ' ');
-        var currentDate = new Date(formattedCurrentDate);
-        var ageInDays = Math.floor((currentDate - createdDate) / (1000 * 60 * 60 * 24));
-
-        document.getElementById("age_{{ ticket['TicketNumber'] }}").textContent = ageInDays + " days";
-        {% endfor %}
-    </script>
+<script src="{{ url_for('static', filename='ageofcase.js') }}"></script>
 </body>
 </html>
