@@ -7,7 +7,8 @@
     <link rel="stylesheet" type="text/css" href="../static/detail.css">
 </head>
 <body>
-<form action="/login.html?dashboard_type={{ dashboard_type }}" method="GET">
+<form action="/dashboard.html" method="GET">
+    <input type="hidden" name="dashboard_type" value="{{ role_name }}">
     <button type="submit">Back</button>
 </form>
     <h1>Single Ticket</h1>

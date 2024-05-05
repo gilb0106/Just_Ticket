@@ -61,7 +61,7 @@ def dashboard():
         user_id = user_dao.get_user_id(session['username'])
         if dashboard_type == 'agent':
             tickets = ticket_dao.get_tickets()
-            headers = ['Ticket Number', 'Content', 'State', 'Created Date', 'Modified Date', 'Ticket For']
+            headers = ['Ticket Number', 'Content', 'State', 'Age','Created Date',  'Modified Date', 'Ticket For']
         elif dashboard_type == 'customer':
             tickets = ticket_dao.get_user_tickets(user_id)
             headers = ['Ticket #', 'Content', 'State', 'Age','Created Date', 'Modified Date']
