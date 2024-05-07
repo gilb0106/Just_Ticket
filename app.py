@@ -6,8 +6,8 @@ from UserDao import UserDAO
 from TicketDao import TicketDao
 import datetime
 
-app = Flask(__name__, static_url_path='/static')
-app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
+app = Flask(__name__, static_url_path='/static')  # Manually declaring static path for css, js
+app.secret_key = 'sadfasdfasdfsafd' # Manual session key for now, to use with session object
 
 # Create database connections
 user_conn = connect_to_database()
@@ -19,16 +19,18 @@ ticket_dao = TicketDao(ticket_conn)
 user_activity = UserActivityDAO(user_conn)
 
 
-@app.route('/')
+@app.route('/')  # First page that loads when you go to host, homepage index.html
 def home():
     return render_template('index.html')
 
-@app.route('/logout')
+
+@app.route('/logout')  # Logout functionality, cancels session
 def logout():
     session.pop('username', None)
     return redirect(url_for('home'))
 
-@app.route('/register.html')
+
+@app.route('/register.html')  # Register page that will be in the works
 def register():
     return render_template('register.html')
 
@@ -41,11 +43,11 @@ def login():
         password = request.form['psw']
         user = user_dao.authenticate_user(username, password)
         user_id = user_dao.get_user_id(username)
-        if user:
-            session['username'] = user['Username']
-            session['RoleID'] = user['RoleID']
-            session['RoleName'] = user['RoleName']
-            if user['RoleID'] == 1:
+        if user:  # Adjusted to use OOP principles
+            session['username'] = user.get_username()
+            session['RoleID'] = user.get_user_id()
+            session['RoleName'] = user.get_role_name()
+            if user.get_role_id() == 1:
                 user_activity.log_activity(user_id, 'login')
                 return redirect(url_for('dashboard', dashboard_type='agent'))
             else:
@@ -56,23 +58,26 @@ def login():
 
 
 @app.route('/dashboard.html')
-def dashboard():
+def dashboard(): # Smart dashboard load
     if 'username' in session:
-        role_name = session.get('RoleName')
+        role_name = session.get('RoleName') # Checks logged in users rolename, if agent see all tickets
         if role_name == 'agent':
             tickets = ticket_dao.get_tickets()
-            headers = ['Ticket Number', 'Content', 'State', 'Age','Created Date',  'Modified Date', 'Ticket For']
+            if not tickets:
+                return "No tickets found"
+            headers = ['Ticket Number', 'Content', 'State', 'Age', 'Created Date', 'Modified Date', 'Ticket For']
         elif role_name == 'customer':
-            user_id = user_dao.get_user_id(session['username'])
-            tickets = ticket_dao.get_user_tickets(user_id)
-            headers = ['Ticket #', 'Content', 'State', 'Age','Created Date', 'Modified Date']
+            user_tickets = session['RoleID'] # If customer, display user tickets based on role id
+            tickets = ticket_dao.get_user_tickets(user_tickets)
+            if not tickets:
+                return "No tickets found"
+            headers = ['Ticket #', 'Content', 'State', 'Age', 'Created Date', 'Modified Date']
         else:
             return "Invalid role"
-        if not tickets:
-            return "No tickets found"
         return render_template('dashboard.html', tickets=tickets, headers=headers)
     else:
-        return redirect(url_for('login'))
+        return redirect(url_for('login')) # If no user session redirect to login
+
 
 @app.route('/ticketDetail.html')
 def ticket_detail():
@@ -117,9 +122,9 @@ def update_ticket():
         if new_state != previous_state:
             # Log activity for state change
             if new_state == 'inprogress':
-                user_activity.log_activity(user_id, 'ticket_inprogress')
+                user_activity.log_activity(user_id, 'ticket_inprogress') # Log user state change with enum value
             elif new_state == 'closed':
-                user_activity.log_activity(user_id, 'ticket_closed')
+                user_activity.log_activity(user_id, 'ticket_closed') # Log user state change with enum value
 
             # Update the ticket agent
             if new_state in ['inprogress', 'closed']:
@@ -129,36 +134,36 @@ def update_ticket():
             if comment:
                 ticket_dao.add_comment(ticket_number, comment, user_id)
                 # Log activity only if a comment is added
-                user_activity.log_activity(user_id, 'ticket_comment')
+                user_activity.log_activity(user_id, 'ticket_comment') # Log user comment with enum value
             return redirect(url_for('ticket_detail', ticket_number=ticket_number))
 
         # Check if comment is empty
         if comment:
             ticket_dao.add_comment(ticket_number, comment, user_id)
-            # Log activity only if a comment is added
-            user_activity.log_activity(user_id, 'ticket_comment')
+            user_activity.log_activity(user_id, 'ticket_comment') # Log user comment with enum value
 
-        # Update the ticket with the new content, state, and agent
+        # Update the ticket with the new content, state, and agent responsible for ticket
         ticket_dao.update_ticket(ticket_number, content, new_state, ticket_agent)
 
         return redirect(url_for('ticket_detail', ticket_number=ticket_number))
 
 
-@app.route('/createticket.html')
+@app.route('/createticket.html')  # Render html page
 def create_ticket_page():
     current_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     return render_template('createticket.html', current_date=current_date)
 
+
 @app.route('/create_ticket', methods=['GET', 'POST'])
-def create_ticket():
+def create_ticket():  # logic for create ticket form, both get and post to get user info and post to db
     if 'username' in session:
-        if request.method == 'POST':
+        if request.method == 'POST':# Pre Fill form data
             content = request.form['content']
             created_by = session['username']
             user_id = user_dao.get_user_id(created_by)
             created_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             if ticket_dao.create_ticket(content, created_by, created_date):
-                user_activity.log_activity(user_id, 'ticket_create')
+                user_activity.log_activity(user_id, 'ticket_create') # Log ticket created with enum value
                 return redirect(url_for('dashboard', dashboard_type='customer'))
             else:
                 return "Failed to create ticket"
@@ -166,7 +171,7 @@ def create_ticket():
             current_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             return render_template('createticket.html', current_date=current_date)
     else:
-        return redirect(url_for('login'))
+        return redirect(url_for('login')) # If no user session redirect to login
 
 
 @app.route('/query_ticket.html', methods=['GET'])
@@ -186,13 +191,14 @@ def query_ticket():
 
             if filtered_tickets:
                 # Render the ticket data as HTML
-                return render_template('ticket_data.html', tickets=filtered_tickets, role_id=role_id, role_name=role_name)
+                return render_template('ticket_data.html', tickets=filtered_tickets, role_id=role_id,
+                                       role_name=role_name)
             else:
                 return "No tickets found matching the criteria."
         else:
             return render_template('query_ticket.html', role_id=role_id, role_name=role_name)
     else:
-        return redirect(url_for('login'))
+        return redirect(url_for('login')) # If no user session redirect to login
 
 
 @app.route('/query_tickets', methods=['POST'])
@@ -208,11 +214,12 @@ def query_tickets():
 
         if filtered_tickets:
             # Render the ticket data as HTML
-            return render_template('ticket_data.html', tickets=filtered_tickets)  # Pass filtered_tickets to the template
+            return render_template('ticket_data.html',
+                                   tickets=filtered_tickets)  # Pass filtered_tickets to the template
         else:
             return "No tickets found matching the criteria."
     else:
-        return redirect(url_for('login'))
+        return redirect(url_for('login')) # If no user session redirect to login
 
 
 @app.route('/export_csv', methods=['POST'])
@@ -236,7 +243,8 @@ def export_csv():
         else:
             return "No tickets selected for export."
     else:
-        return redirect(url_for('login'))
+        return redirect(url_for('login')) # If no user session redirect to login
+
 
 if __name__ == '__main__':
     app.run()

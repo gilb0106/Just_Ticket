@@ -1,4 +1,6 @@
 import mysql.connector
+from User import User
+
 class UserDAO:
     def __init__(self, conn):
         self.conn = conn
@@ -19,7 +21,7 @@ class UserDAO:
                 print(f"User authenticated: {result}")
             else:
                 print("Authentication failed: User not found or invalid credentials")
-            return result
+            return User(result['UserID'], result['Username'], result['Password'], result['RoleID'], result['RoleName']) if result else None
         except mysql.connector.Error as e:
             print(f"Error authenticating user: {e}")
             return None

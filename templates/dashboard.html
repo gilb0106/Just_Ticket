@@ -38,14 +38,10 @@
     </table>
 {% if session.RoleID != 1 %}
     <h1>Need to Create a ticket?</h1>
-    <a href="/create_ticket.html">Click this link to Create Ticket</a>
-{% else %}
-    {% if 'TicketFor' in ticket %}
-        <td>{{ ticket['TicketFor'] }}</td>
-    {% endif %}
-    {% if session.RoleID == 1 %}
-        <td><a href="/query_ticket.html">Go to Query</a></td>
-    {% endif %}
+    <a href="/createticket.html">Click this link to Create Ticket</a>
+{% endif %}
+{% if session.RoleID == 1 %}
+    <td><a href="/query_ticket.html">Go to Query</a></td>
 {% endif %}
 
 <script src="{{ url_for('static', filename='js/ageofcase.js') }}"></script>

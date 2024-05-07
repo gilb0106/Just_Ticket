@@ -1,12 +1,16 @@
 import mysql.connector
 import csv
+
+from Ticket import Ticket
+
+
 class TicketDao:
     def __init__(self, conn):
         self.conn = conn
 
     def get_tickets(self):
         try:
-            cursor = self.conn.cursor(dictionary=True)  # Return rows as dictionaries
+            cursor = self.conn.cursor(dictionary=True)
             cursor.execute("""
                 SELECT 
                     ticket.TicketNumber, 
@@ -19,7 +23,18 @@ class TicketDao:
                 INNER JOIN user ON ticket.UserID = user.UserID
             """)
             result = cursor.fetchall()
-            return result
+            tickets = []
+            for row in result:
+                ticket = Ticket(
+                    row['TicketNumber'],
+                    row['TicketContent'],
+                    row['State'],
+                    row['Created'],
+                    row['Modified'],
+                    row['TicketFor']
+                )
+                tickets.append(ticket.as_dict())  # Convert Ticket object to dictionary
+            return tickets
         except mysql.connector.Error as err:
             print(f"Error executing SQL query: {err}")
             return None
