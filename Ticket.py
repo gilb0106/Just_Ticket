@@ -9,8 +9,8 @@ class Ticket:
 
     def as_dict(self): # need to pass dictionary created cursor sql query, constructor wont work right without
         return {
-            'Ticket Number': self._ticket_number,
-            'Content': self._content,
+            'TicketNumber': self._ticket_number,
+            'TicketContent': self._content,
             'State': self._state,
             'Created': self._created_date,
             'Modified':self._modified_date,

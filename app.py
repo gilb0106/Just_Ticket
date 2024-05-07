@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session, Response, flash
 
 from DBConnectUser import connect_to_database
-from Ticket import Ticket
 from UserActivityDAO import UserActivityDAO
 from UserDao import UserDAO
 from TicketDao import TicketDao
@@ -46,7 +45,7 @@ def login():
         user_id = user_dao.get_user_id(username)
         if user:  # Adjusted to use OOP principles
             session['username'] = user.get_username()
-            session['RoleID'] = user.get_user_id()
+            session['UserID'] = user.get_user_id()
             session['RoleName'] = user.get_role_name()
             if user.get_role_id() == 1:
                 user_activity.log_activity(user_id, 'login')
@@ -68,19 +67,14 @@ def dashboard(): # Smart dashboard load
                 return "No tickets found"
             headers = ['Ticket Number', 'Content', 'State', 'Age', 'Created Date', 'Modified Date', 'Ticket For']
         elif role_name == 'customer':
-            user_tickets = session['RoleID'] # If customer, display user tickets based on role id
+            user_tickets = session['UserID'] # If customer, display user tickets based on role id
             tickets = ticket_dao.get_user_tickets(user_tickets)
             if not tickets:
                 return "No tickets found"
             headers = ['Ticket #', 'Content', 'State', 'Age', 'Created Date', 'Modified Date']
         else:
             return "Invalid role"
-        ticket_objects = [
-            Ticket(ticket_number=ticket['Ticket Number'], content=ticket['Content'], state=ticket['State'],
-                   created_date=ticket['Created'], modified_date=ticket['Modified'],
-                   user_id=ticket['TicketFor']) for ticket in tickets]
-
-        return render_template('dashboard.html', tickets=ticket_objects, headers=headers)
+        return render_template('dashboard.html', tickets=tickets, headers=headers)
     else:
         return redirect(url_for('login')) # If no user session redirect to login
 
