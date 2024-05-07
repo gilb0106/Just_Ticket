@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session, Response, flash
 
 from DBConnectUser import connect_to_database
+from Ticket import Ticket
 from UserActivityDAO import UserActivityDAO
 from UserDao import UserDAO
 from TicketDao import TicketDao
@@ -74,7 +75,12 @@ def dashboard(): # Smart dashboard load
             headers = ['Ticket #', 'Content', 'State', 'Age', 'Created Date', 'Modified Date']
         else:
             return "Invalid role"
-        return render_template('dashboard.html', tickets=tickets, headers=headers)
+        ticket_objects = [
+            Ticket(ticket_number=ticket['Ticket Number'], content=ticket['Content'], state=ticket['State'],
+                   created_date=ticket['Created'], modified_date=ticket['Modified'],
+                   user_id=ticket['TicketFor']) for ticket in tickets]
+
+        return render_template('dashboard.html', tickets=ticket_objects, headers=headers)
     else:
         return redirect(url_for('login')) # If no user session redirect to login
 

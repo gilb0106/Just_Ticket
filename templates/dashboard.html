@@ -15,35 +15,40 @@
     <table border="1">
         <thead>
             <tr>
-                {% for header in headers %}
-                <th>{{ header }}</th>
-                {% endfor %}
+                <th>Ticket Number</th>
+                <th>Content</th>
+                <th>State</th>
+                <th>Age</th>
+                <th>Created Date</th>
+                <th>Modified Date</th>
+                {% if session.RoleID != 1 %}
+                <th>Ticket For</th>
+                {% endif %}
             </tr>
         </thead>
         <tbody>
             {% for ticket in tickets %}
             <tr>
-                <td><a href="/ticketDetail.html?ticket_number={{ ticket['TicketNumber'] }}">{{ ticket['TicketNumber'] }}</a></td>
-                <td>{{ ticket['TicketContent'] }}</td>
-                <td>{{ ticket['State'] }}</td>
-                <td id="age_{{ ticket['TicketNumber'] }}" data-created="{{ ticket['Created'] }}"></td>
-                <td>{{ ticket['Created'] }}</td>
-                <td>{{ ticket['Modified'] }}</td>
-                {% if 'TicketFor' in ticket %}
-                <td>{{ ticket['TicketFor'] }}</td>
+                <td><a href="/ticketDetail.html?ticket_number={{ ticket.get_ticket_number() }}">{{ ticket.get_ticket_number() }}</a></td>
+                <td>{{ ticket.get_content() }}</td>
+                <td>{{ ticket.get_state() }}</td>
+                <td id="age_{{ ticket.get_ticket_number() }}" data-created="{{ ticket.get_created_date() }}"></td>
+                <td>{{ ticket.get_created_date() }}</td>
+                <td>{{ ticket.get_modified_date() }}</td>
+                {% if session.RoleID != 1 %}
+                <td>{{ ticket.get_ticket_for() }}</td>
                 {% endif %}
             </tr>
             {% endfor %}
         </tbody>
     </table>
-{% if session.RoleID != 1 %}
+    {% if session.RoleID != 1 %}
     <h1>Need to Create a ticket?</h1>
     <a href="/createticket.html">Click this link to Create Ticket</a>
-{% endif %}
-{% if session.RoleID == 1 %}
+    {% endif %}
+    {% if session.RoleID == 1 %}
     <td><a href="/query_ticket.html">Go to Query</a></td>
-{% endif %}
-
-<script src="{{ url_for('static', filename='js/ageofcase.js') }}"></script>
+    {% endif %}
+    <script src="{{ url_for('static', filename='js/ageofcase.js') }}"></script>
 </body>
 </html>
