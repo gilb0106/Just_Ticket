@@ -6,15 +6,6 @@ class User:
         self._role_id = role_id
         self._role_name = role_name
 
-    def as_dict(self):
-        return {
-            'UserID': self._user_id,
-            'Username': self._username,
-            'Password': self._password,
-            'RoleID': self._role_id,
-            'RoleName': self._role_name
-        }
-
     # Getters
     def get_user_id(self):
         return self._user_id
