@@ -16,18 +16,18 @@
                 <th>State</th>
                 <th>Created Date</th>
                 <th>Modified Date</th>
-                <th>Agent Username</th>
+                <th>Ticket For</th>
             </tr>
         </thead>
         <tbody>
             {% for ticket in tickets %}
             <tr>
-                <td>{{ ticket[0] }}</td>
-                <td>{{ ticket[1] }}</td>
-                <td>{{ ticket[2] }}</td>
-                <td>{{ ticket[3] }}</td>
-                <td>{{ ticket[4] }}</td>
-                <td>{{ ticket[5] }}</td>
+                <td>{{ ticket.get_ticket_number() }}</td>
+                <td>{{ ticket.get_content() }}</td>
+                <td>{{ ticket.get_state() }}</td>
+                <td>{{ ticket.get_created_date() }}</td>
+                <td>{{ ticket.get_modified_date() }}</td>
+                <td>{{ ticket.get_user_id() }}</td>
             </tr>
             {% endfor %}
         </tbody>

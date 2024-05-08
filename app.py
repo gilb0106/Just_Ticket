@@ -65,16 +65,14 @@ def dashboard(): # Smart dashboard load
             tickets = ticket_dao.get_tickets()
             if not tickets:
                 return "No tickets found"
-            headers = ['Ticket Number', 'Content', 'State', 'Age', 'Created Date', 'Modified Date', 'Ticket For']
         elif role_name == 'customer':
             user_tickets = session['UserID'] # If customer, display user tickets based on role id
             tickets = ticket_dao.get_user_tickets(user_tickets)
             if not tickets:
                 return "No tickets found"
-            headers = ['Ticket Number', 'Content', 'State', 'Age', 'Created Date', 'Modified Date', 'Ticket For']
         else:
             return "Invalid role"
-        return render_template('dashboard.html', tickets=tickets, headers=headers)
+        return render_template('dashboard.html', tickets=tickets)
     else:
         return redirect(url_for('login')) # If no user session redirect to login
 

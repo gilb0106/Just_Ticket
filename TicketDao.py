@@ -160,7 +160,7 @@ class TicketDao:
 
     def query_tickets(self, state=None, created_date=None, modified_date=None):
         # Establish a cursor to execute SQL queries
-        cursor = self.conn.cursor()
+        cursor = self.conn.cursor(dictionary=True)
 
         # Base SQL query to select tickets with necessary joins
         query = """
@@ -170,12 +170,11 @@ class TicketDao:
                 t.State, 
                 t.Created AS CreatedDate, 
                 t.Modified AS ModifiedDate, 
-                TIMESTAMPDIFF(DAY, t.Created, NOW()) AS Age,
-                CONCAT(u.Username) AS AgentUsername
+                u.Username as TicketFor
             FROM 
                 ticket AS t
             LEFT JOIN 
-                user AS u ON t.TicketAgent = u.UserID
+                user AS u ON t.UserID = u.UserID
         """
         # Initialize the WHERE clause
         where_clause = []
@@ -192,8 +191,23 @@ class TicketDao:
         # Execute the SQL query
         cursor.execute(query)
         # Fetch all the selected rows
-        tickets = cursor.fetchall()
+        rows = cursor.fetchall()
         # Close the cursor
         cursor.close()
+
+        # Create instances of Ticket class
+        tickets = []
+        for row in rows:
+            ticket = Ticket(
+                row['TicketNumber'],
+                row['Content'],
+                row['State'],
+                row['CreatedDate'],
+                row['ModifiedDate'],
+                row['TicketFor']
+            )
+            tickets.append(ticket)
+
         # Return the queried tickets
         return tickets
+
