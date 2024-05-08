@@ -23,24 +23,24 @@
         <tbody>
             {% for ticket in tickets %}
             <tr>
-                <td><a href="/ticketDetail.html?ticket_number={{ ticket['TicketNumber'] }}">{{ ticket['TicketNumber'] }}</a></td>
-                <td>{{ ticket['TicketContent'] }}</td>
-                <td>{{ ticket['State'] }}</td>
-                <td id="age_{{ ticket['TicketNumber'] }}" data-created="{{ ticket['Created'] }}"></td>
-                <td>{{ ticket['Created'] }}</td>
-                <td>{{ ticket['Modified'] }}</td>
-                {% if 'TicketFor' in ticket %}
-                <td>{{ ticket['TicketFor'] }}</td> #
+                <td><a href="/ticketDetail.html?ticket_number={{ ticket.get_ticket_number() }}">{{ ticket.get_ticket_number() }}</a></td>
+                <td>{{ ticket.get_content() }}</td>
+                <td>{{ ticket.get_state() }}</td>
+                <td id="age_{{ ticket.get_ticket_number()  }}" data-created="{{ ticket.get_created_date() }}"></td>
+                <td>{{ ticket.get_created_date() }}</td>
+                <td>{{ ticket.get_modified_date() }}</td>
+                {% if ticket.get_user_id() %}
+                <td>{{ ticket.get_user_id() }}</td>
                 {% endif %}
             </tr>
             {% endfor %}
         </tbody>
     </table>
-{% if session.RoleID != 1 %}
+{% if session.get('RoleName') != 'agent' %}
     <h1>Need to Create a ticket?</h1>
     <a href="/createticket.html">Click this link to Create Ticket</a>
 {% endif %}
-{% if session.RoleID == 1 %}
+{% if session.get('RoleName') == 'agent' %}
     <td><a href="/query_ticket.html">Go to Query</a></td>
 {% endif %}
 

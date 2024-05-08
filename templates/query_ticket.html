@@ -13,39 +13,25 @@
 </head>
 <body>
     <h2>Ticket Query</h2>
-<form id="queryForm" action="{{ url_for('query_tickets') }}" method="post">
-    <label for="state">State:</label>
-    <select name="state" id="state">
-        <option value="open">Open</option>
-        <option value="inprogress">In Progress</option>
-        <option value="closed">Closed</option>
-    </select><br><br>
-    <label for="created_date">Created Date:</label>
-    <input type="date" id="created_date" name="created_date"><br><br>
-    <label for="modified_date">Modified Date:</label>
-    <input type="date" id="modified_date" name="modified_date"><br><br>
-    <button type="submit">Query</button>
-</form>
-    <div id="ticketData"></div>
+    <form action="{{ url_for('query_tickets') }}" method="post">
+        <label for="state">State:</label>
+        <select name="state" id="state">
+            <option value="open">Open</option>
+            <option value="inprogress">In Progress</option>
+            <option value="closed">Closed</option>
+        </select><br><br>
+        <label for="created_date">Created Date:</label>
+        <input type="date" id="created_date" name="created_date"><br><br>
+        <label for="modified_date">Modified Date:</label>
+        <input type="date" id="modified_date" name="modified_date"><br><br>
+        <button type="submit">Query</button>
+    </form>
+    {% if message %}
+        <p>{{ message }}</p>
+    {% endif %}
 
-    <script>
-        document.getElementById('queryForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            fetch('/query_tickets', {
-                method: 'POST',
-                body: new FormData(document.getElementById('queryForm')),
-            })
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById('ticketData').innerHTML = data;
-                // Show export button if there are tickets
-                if (data.trim() !== "No tickets found matching the criteria.") {
-                    document.getElementById('exportBtn').style.display = 'inline-block';
-                } else {
-                    document.getElementById('exportBtn').style.display = 'none';
-                }
-            });
-        });
-    </script>
+    {% if ticket_data_html %}
+        {{ ticket_data_html | safe }}
+    {% endif %}
 </body>
 </html>

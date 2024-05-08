@@ -21,6 +21,7 @@ class TicketDao:
                     user.Username as TicketFor
                 FROM ticket
                 INNER JOIN user ON ticket.UserID = user.UserID
+                ORDER BY ticket.TicketNumber ASC
             """)
             result = cursor.fetchall()
             tickets = []
@@ -33,7 +34,7 @@ class TicketDao:
                     row['Modified'],
                     row['TicketFor']
                 )
-                tickets.append(ticket.as_dict())  # Convert Ticket object to dictionary
+                tickets.append(ticket)  # Convert Ticket object to dictionary
             return tickets
         except mysql.connector.Error as err:
             print(f"Error executing SQL query: {err}")
@@ -108,10 +109,32 @@ class TicketDao:
     def get_user_tickets(self, user_id):
         try:
             cursor = self.conn.cursor(dictionary=True)
-            cursor.execute("SELECT * FROM ticket WHERE UserID = %s", (user_id,))
-            user_tickets = cursor.fetchall()
-            cursor.close()
-            return user_tickets
+            cursor.execute("""
+                SELECT 
+                    ticket.TicketNumber, 
+                    ticket.TicketContent, 
+                    ticket.State, 
+                    ticket.Created, 
+                    ticket.Modified, 
+                    user.Username as TicketFor
+                FROM ticket
+                INNER JOIN user ON ticket.UserID = user.UserID
+                WHERE ticket.UserID = %s ORDER BY ticket.TicketNumber ASC
+            """, (user_id,))
+            result = cursor.fetchall()
+            tickets = []  # Create a list to store tickets
+            for row in result:
+                ticket = Ticket(
+                    row['TicketNumber'],
+                    row['TicketContent'],
+                    row['State'],
+                    row['Created'],
+                    row['Modified'],
+                    row['TicketFor']
+                )
+                tickets.append(ticket)  # Append each ticket to the list
+
+            return tickets  # Return the list of tickets
         except mysql.connector.Error as err:
             print(f"Error fetching user tickets: {err}")
             return None
@@ -154,10 +177,8 @@ class TicketDao:
             LEFT JOIN 
                 user AS u ON t.TicketAgent = u.UserID
         """
-
         # Initialize the WHERE clause
         where_clause = []
-
         # Add conditions to the WHERE clause based on input parameters
         if state:
             where_clause.append(f"t.State = '{state}'")
@@ -165,19 +186,14 @@ class TicketDao:
             where_clause.append(f"DATE(t.Created) = '{created_date}'")
         if modified_date:
             where_clause.append(f"DATE(t.Modified) = '{modified_date}'")
-
         # Construct the final SQL query
         if where_clause:
             query += " WHERE " + " AND ".join(where_clause)
-
         # Execute the SQL query
         cursor.execute(query)
-
         # Fetch all the selected rows
         tickets = cursor.fetchall()
-
         # Close the cursor
         cursor.close()
-
         # Return the queried tickets
         return tickets

@@ -7,16 +7,6 @@ class Ticket:
         self._modified_date = modified_date
         self._user_id = user_id
 
-    def as_dict(self): # need to pass dictionary created cursor sql query, constructor wont work right without
-        return {
-            'TicketNumber': self._ticket_number,
-            'TicketContent': self._content,
-            'State': self._state,
-            'Created': self._created_date,
-            'Modified':self._modified_date,
-            'TicketFor': self._user_id
-        }
-
     # Getters
     def get_ticket_number(self):
         return self._ticket_number

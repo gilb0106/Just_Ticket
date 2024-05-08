@@ -71,7 +71,7 @@ def dashboard(): # Smart dashboard load
             tickets = ticket_dao.get_user_tickets(user_tickets)
             if not tickets:
                 return "No tickets found"
-            headers = ['Ticket #', 'Content', 'State', 'Age', 'Created Date', 'Modified Date']
+            headers = ['Ticket Number', 'Content', 'State', 'Age', 'Created Date', 'Modified Date', 'Ticket For']
         else:
             return "Invalid role"
         return render_template('dashboard.html', tickets=tickets, headers=headers)
@@ -214,10 +214,10 @@ def query_tickets():
 
         if filtered_tickets:
             # Render the ticket data as HTML
-            return render_template('ticket_data.html',
-                                   tickets=filtered_tickets)  # Pass filtered_tickets to the template
+            ticket_data_html = render_template('ticket_data.html', tickets=filtered_tickets)
+            return render_template('query_ticket.html', ticket_data_html=ticket_data_html)
         else:
-            return "No tickets found matching the criteria."
+            return render_template('query_ticket.html', message="No tickets found matching the criteria.")
     else:
         return redirect(url_for('login')) # If no user session redirect to login
 
