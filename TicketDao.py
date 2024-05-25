@@ -1,8 +1,6 @@
 import mysql.connector
-import csv
-
+from datetime import datetime
 from Ticket import Ticket
-
 
 class TicketDao:
     def __init__(self, conn):
@@ -34,7 +32,7 @@ class TicketDao:
                     row['Modified'],
                     row['TicketFor']
                 )
-                tickets.append(ticket)  # Convert Ticket object to dictionary
+                tickets.append(ticket)
             return tickets
         except mysql.connector.Error as err:
             print(f"Error executing SQL query: {err}")
@@ -55,6 +53,7 @@ class TicketDao:
         except mysql.connector.Error as err:
             print(f"Error fetching ticket details: {err}")
             return None
+
     def get_ticket_state(self, ticket_number):
         try:
             cursor = self.conn.cursor()
@@ -66,22 +65,23 @@ class TicketDao:
         except mysql.connector.Error as err:
             print(f"Error fetching ticket state: {err}")
             return None
-    def update_ticket(self, ticket_number, content, state, ticket_agent=None):
+
+    def update_ticket(self, ticket_number, content, state, modified_date, ticket_agent=None):
         try:
             cursor = self.conn.cursor()
-            update_query = "UPDATE ticket SET TicketContent = %s, State = %s, TicketAgent = %s WHERE TicketNumber = %s"
-            cursor.execute(update_query, (content, state, ticket_agent, ticket_number))
+            update_query = "UPDATE ticket SET TicketContent = %s, State = %s, TicketAgent = %s, Modified = %s WHERE TicketNumber = %s"
+            cursor.execute(update_query, (content, state, ticket_agent, modified_date, ticket_number))
             self.conn.commit()
             cursor.close()
             print("Ticket updated successfully")
         except mysql.connector.Error as err:
             print(f"Error updating ticket: {err}")
 
-    def add_comment(self, ticket_number, comment, user_id):
+    def add_comment(self, ticket_number, comment, user_id, comment_date):
         try:
             cursor = self.conn.cursor()
-            insert_query = "INSERT INTO ticketcomment (TicketNumber, CommentContent, UserID) VALUES (%s, %s, %s)"
-            cursor.execute(insert_query, (ticket_number, comment, user_id))
+            insert_query = "INSERT INTO ticketcomment (TicketNumber, CommentContent, UserID, CommentDate) VALUES (%s, %s, %s, %s)"
+            cursor.execute(insert_query, (ticket_number, comment, user_id, comment_date))
             self.conn.commit()
             cursor.close()
             print("Comment added to ticket successfully")
@@ -159,55 +159,45 @@ class TicketDao:
             return False
 
     def query_tickets(self, state=None, created_date=None, modified_date=None):
-        # Establish a cursor to execute SQL queries
-        cursor = self.conn.cursor(dictionary=True)
-
-        # Base SQL query to select tickets with necessary joins
-        query = """
-            SELECT 
-                t.TicketNumber, 
-                t.TicketContent AS Content, 
-                t.State, 
-                t.Created AS CreatedDate, 
-                t.Modified AS ModifiedDate, 
-                u.Username as TicketFor
-            FROM 
-                ticket AS t
-            LEFT JOIN 
-                user AS u ON t.UserID = u.UserID
-        """
-        # Initialize the WHERE clause
-        where_clause = []
-        # Add conditions to the WHERE clause based on input parameters
-        if state:
-            where_clause.append(f"t.State = '{state}'")
-        if created_date:
-            where_clause.append(f"DATE(t.Created) = '{created_date}'")
-        if modified_date:
-            where_clause.append(f"DATE(t.Modified) = '{modified_date}'")
-        # Construct the final SQL query
-        if where_clause:
-            query += " WHERE " + " AND ".join(where_clause)
-        # Execute the SQL query
-        cursor.execute(query)
-        # Fetch all the selected rows
-        rows = cursor.fetchall()
-        # Close the cursor
-        cursor.close()
-
-        # Create instances of Ticket class
-        tickets = []
-        for row in rows:
-            ticket = Ticket(
-                row['TicketNumber'],
-                row['Content'],
-                row['State'],
-                row['CreatedDate'],
-                row['ModifiedDate'],
-                row['TicketFor']
-            )
-            tickets.append(ticket)
-
-        # Return the queried tickets
-        return tickets
-
+        try:
+            cursor = self.conn.cursor(dictionary=True)
+            query = """
+                SELECT 
+                    t.TicketNumber, 
+                    t.TicketContent AS Content, 
+                    t.State, 
+                    t.Created AS CreatedDate, 
+                    t.Modified AS ModifiedDate, 
+                    u.Username as TicketFor
+                FROM 
+                    ticket AS t
+                LEFT JOIN 
+                    user AS u ON t.UserID = u.UserID
+            """
+            where_clause = []
+            if state:
+                where_clause.append(f"t.State = '{state}'")
+            if created_date:
+                where_clause.append(f"DATE(t.Created) = '{created_date}'")
+            if modified_date:
+                where_clause.append(f"DATE(t.Modified) = '{modified_date}'")
+            if where_clause:
+                query += " WHERE " + " AND ".join(where_clause)
+            cursor.execute(query)
+            rows = cursor.fetchall()
+            cursor.close()
+            tickets = []
+            for row in rows:
+                ticket = Ticket(
+                    row['TicketNumber'],
+                    row['Content'],
+                    row['State'],
+                    row['CreatedDate'],
+                    row['ModifiedDate'],
+                    row['TicketFor']
+                )
+                tickets.append(ticket)
+            return tickets
+        except mysql.connector.Error as err:
+            print(f"Error querying tickets: {err}")
+            return None

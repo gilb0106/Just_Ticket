@@ -4,7 +4,7 @@ from DBConnectUser import connect_to_database
 from UserActivityDAO import UserActivityDAO
 from UserDao import UserDAO
 from TicketDao import TicketDao
-import datetime
+from datetime import datetime
 
 app = Flask(__name__, static_url_path='/static')  # Manually declaring static path for css, js
 app.secret_key = 'sadfasdfasdfsafd' # Manual session key for now, to use with session object
@@ -115,6 +115,7 @@ def update_ticket():
         username = session.get('username')
         user_id = user_dao.get_user_id(username)
         user_role = session.get('RoleName')
+        modified_date = datetime.now()
 
         ticket_agent = None
 
@@ -123,31 +124,25 @@ def update_ticket():
         if user_role != 'agent' and previous_state != new_state:
             flash("You don't have permission to change the ticket state.", 'error')
             return redirect(url_for('ticket_detail', ticket_number=ticket_number))
+
         if new_state != previous_state:
             # Log activity for state change
             if new_state == 'inprogress':
-                user_activity.log_activity(user_id, 'ticket_inprogress') # Log user state change with enum value
+                user_activity.log_activity(user_id, 'ticket_inprogress')  # Log user state change with enum value
             elif new_state == 'closed':
-                user_activity.log_activity(user_id, 'ticket_closed') # Log user state change with enum value
+                user_activity.log_activity(user_id, 'ticket_closed')  # Log user state change with enum value
 
             # Update the ticket agent
             if new_state in ['inprogress', 'closed']:
                 ticket_agent = user_id
-        else:  # State remains the same
-            # Check if comment is empty
-            if comment:
-                ticket_dao.add_comment(ticket_number, comment, user_id)
-                # Log activity only if a comment is added
-                user_activity.log_activity(user_id, 'ticket_comment') # Log user comment with enum value
-            return redirect(url_for('ticket_detail', ticket_number=ticket_number))
 
         # Check if comment is empty
         if comment:
-            ticket_dao.add_comment(ticket_number, comment, user_id)
-            user_activity.log_activity(user_id, 'ticket_comment') # Log user comment with enum value
+            ticket_dao.add_comment(ticket_number, comment, user_id, modified_date)
+            user_activity.log_activity(user_id, 'ticket_comment')  # Log user comment with enum value
 
-        # Update the ticket with the new content, state, and agent responsible for ticket
-        ticket_dao.update_ticket(ticket_number, content, new_state, ticket_agent)
+        # Update the ticket with the new content, state, and agent responsible for the ticket
+        ticket_dao.update_ticket(ticket_number, content, new_state, modified_date, ticket_agent)
 
         return redirect(url_for('ticket_detail', ticket_number=ticket_number))
 

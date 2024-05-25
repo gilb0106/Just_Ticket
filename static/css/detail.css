@@ -18,6 +18,16 @@ body {
     color: red;
     font-weight: bold;
 }
+
+.transparent-background {
+    background-color: rgba(128, 128, 128, 0.5); /* grey color with 50% transparency */
+    padding: 20px;
+    border-radius: 10px;
+}
+.heading {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
 label {
     display: block;
     font-weight: bold;

@@ -7,7 +7,7 @@
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link rel="stylesheet" type="text/css" href="../static/css/detail.css">
 </head>
-<body>
+<div>
 <div id="flash-messages">
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
@@ -62,13 +62,15 @@
 
         <label for="comment">Update Ticket:</label>
         <input type="text" id="comment" name="comment">
-
+<div class="transparent-background">
         <h2>All Ticket Updates</h2>
         {% if comments %}
         <ul>
             {% for comment in comments|sort(attribute='CommentDate') %}
             <li>
+                <div class="heading">
                 <p>{{ comment['Username'] }}{% if comment.get('RoleName') %} ({{ comment['RoleName'] }}){% endif %} - {{ comment['CommentDate'] }}</p>
+            </div>
                 <p>{{ comment['CommentContent'] }}</p>
             </li>
             {% endfor %}
@@ -79,6 +81,7 @@
 
         <input type="submit" value="Update Ticket">
     </form>
+</div>
 </body>
 <script src="{{ url_for('static', filename='js/clearflash.js') }}"></script>
 </html>
