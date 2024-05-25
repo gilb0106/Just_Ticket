@@ -58,23 +58,29 @@ def login():
 
 
 @app.route('/dashboard.html')
-def dashboard(): # Smart dashboard load
+def dashboard():
     if 'username' in session:
-        role_name = session.get('RoleName') # Checks logged in users rolename, if agent see all tickets
+        role_name = session.get('RoleName')
+        user_id = session.get('UserID')
+
         if role_name == 'agent':
-            tickets = ticket_dao.get_tickets()
-            if not tickets:
-                return "No tickets found"
+            all_tickets = ticket_dao.get_tickets()
+            in_progress_tickets = [ticket for ticket in all_tickets if ticket.get_state() == 'inprogress']
+            open_tickets = [ticket for ticket in all_tickets if ticket.get_state() == 'open']
+            closed_tickets = [ticket for ticket in all_tickets if ticket.get_state() == 'closed']
+            return render_template('dashboard.html', in_progress_tickets=in_progress_tickets, open_tickets=open_tickets,
+                                   closed_tickets=closed_tickets)
+
         elif role_name == 'customer':
-            user_tickets = session['UserID'] # If customer, display user tickets based on role id
-            tickets = ticket_dao.get_user_tickets(user_tickets)
-            if not tickets:
-                return "No tickets found"
+            user_tickets = ticket_dao.get_user_tickets(user_id)
+            active_tickets = [ticket for ticket in user_tickets if ticket.get_state() != 'closed']
+            past_tickets = [ticket for ticket in user_tickets if ticket.get_state() == 'closed']
+            return render_template('dashboard.html', active_tickets=active_tickets, past_tickets=past_tickets)
+
         else:
             return "Invalid role"
-        return render_template('dashboard.html', tickets=tickets)
     else:
-        return redirect(url_for('login')) # If no user session redirect to login
+        return redirect(url_for('login'))
 
 
 @app.route('/ticketDetail.html')
@@ -153,15 +159,16 @@ def create_ticket_page():
 
 
 @app.route('/create_ticket', methods=['GET', 'POST'])
-def create_ticket():  # logic for create ticket form, both get and post to get user info and post to db
+def create_ticket():
     if 'username' in session:
-        if request.method == 'POST':# Pre Fill form data
+        if request.method == 'POST':
             content = request.form['content']
             created_by = session['username']
             user_id = user_dao.get_user_id(created_by)
             created_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             if ticket_dao.create_ticket(content, created_by, created_date):
-                user_activity.log_activity(user_id, 'ticket_create') # Log ticket created with enum value
+                user_activity.log_activity(user_id, 'ticket_create')
+                flash("Ticket created successfully", 'success')  # Flash success message
                 return redirect(url_for('dashboard', dashboard_type='customer'))
             else:
                 return "Failed to create ticket"
@@ -169,8 +176,7 @@ def create_ticket():  # logic for create ticket form, both get and post to get u
             current_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             return render_template('createticket.html', current_date=current_date)
     else:
-        return redirect(url_for('login')) # If no user session redirect to login
-
+        return redirect(url_for('login'))
 
 @app.route('/query_ticket.html', methods=['GET'])
 def query_ticket():

@@ -12,6 +12,10 @@ body {
     padding: 20px;
     background-color: rgba(144, 238, 144, 0.3);
 }
+#flash-messages {
+    color: red;
+    font-weight: bold;
+}
 .container {
     max-width: 500px;
     margin: auto;

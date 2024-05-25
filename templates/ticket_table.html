@@ -1,0 +1,28 @@
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Ticket Number</th>
+            <th>Content</th>
+            <th>State</th>
+            <th>Age</th>
+            <th>Created Date</th>
+            <th>Modified Date</th>
+            <th>Ticket For</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for ticket in tickets %}
+        <tr>
+            <td><a href="/ticketDetail.html?ticket_number={{ ticket.get_ticket_number() }}">{{ ticket.get_ticket_number() }}</a></td>
+            <td>{{ ticket.get_content() }}</td>
+            <td>{{ ticket.get_state() }}</td>
+            <td id="age_{{ ticket.get_ticket_number() }}" data-created="{{ ticket.get_created_date() }}"></td>
+            <td>{{ ticket.get_created_date() }}</td>
+            <td>{{ ticket.get_modified_date() }}</td>
+            {% if ticket.get_user_id() %}
+            <td>{{ ticket.get_user_id() }}</td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

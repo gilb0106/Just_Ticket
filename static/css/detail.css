@@ -14,7 +14,10 @@ body {
 .flex-item {
     flex: 1;
 }
-
+#flash-messages {
+    color: red;
+    font-weight: bold;
+}
 label {
     display: block;
     font-weight: bold;

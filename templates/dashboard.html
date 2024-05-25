@@ -5,42 +5,68 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <link rel="stylesheet" type="text/css" href="../static/css/stylesheet.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/stylesheet.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        .tabs { overflow: hidden; }
+        .tabs button { float: left; border: none; background: #ddd; padding: 10px; cursor: pointer; }
+        .tabs button.active { background: #ccc; }
+        .tab-content { display: none; padding: 20px; }
+        .tab-content.active { display: block; }
+    </style>
 </head>
 <body>
+<div id="flash-messages">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <ul>
+                {% for category, message in messages %}
+                    <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+</div>
     <form action="/logout" method="GET">
         <button type="submit">Logout</button>
     </form>
-    <h1>All Tickets</h1>
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Ticket Number</th>
-                <th>Content</th>
-                <th>State</th>
-                <th>Age</th>
-                <th>Created Date</th>
-                <th>Modified Date</th>
-                <th>Ticket For</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for ticket in tickets %}
-            <tr>
-                <td><a href="/ticketDetail.html?ticket_number={{ ticket.get_ticket_number() }}">{{ ticket.get_ticket_number() }}</a></td>
-                <td>{{ ticket.get_content() }}</td>
-                <td>{{ ticket.get_state() }}</td>
-                <td id="age_{{ ticket.get_ticket_number()  }}" data-created="{{ ticket.get_created_date() }}"></td>
-                <td>{{ ticket.get_created_date() }}</td>
-                <td>{{ ticket.get_modified_date() }}</td>
-                {% if ticket.get_user_id() %}
-                <td>{{ ticket.get_user_id() }}</td>
-                {% endif %}
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-{% if session.get('RoleName') != 'agent' %}
+    <h1>Dashboard</h1>
+    <div class="tabs">
+        {% if session.get('RoleName') == 'agent' %}
+            <button class="tab-button" data-tab="in-progress">In Progress Tickets</button>
+            <button class="tab-button" data-tab="open">Open Tickets</button>
+            <button class="tab-button" data-tab="closed">Closed Tickets</button>
+        {% else %}
+            <button class="tab-button" data-tab="active">Active Tickets</button>
+            <button class="tab-button" data-tab="past">Past Tickets</button>
+        {% endif %}
+    </div>
+    <div class="tab-content" id="in-progress">
+        {% with tickets=in_progress_tickets %}
+            {% include 'ticket_table.html' %}
+        {% endwith %}
+    </div>
+    <div class="tab-content" id="open">
+        {% with tickets=open_tickets %}
+            {% include 'ticket_table.html' %}
+        {% endwith %}
+    </div>
+    <div class="tab-content" id="closed">
+        {% with tickets=closed_tickets %}
+            {% include 'ticket_table.html' %}
+        {% endwith %}
+    </div>
+    <div class="tab-content" id="active">
+        {% with tickets=active_tickets %}
+            {% include 'ticket_table.html' %}
+        {% endwith %}
+    </div>
+    <div class="tab-content" id="past">
+        {% with tickets=past_tickets %}
+            {% include 'ticket_table.html' %}
+        {% endwith %}
+    </div>
+    {% if session.get('RoleName') != 'agent' %}
     <h1>Need to Create a ticket?</h1>
     <a href="/createticket.html">Click this link to Create Ticket</a>
 {% endif %}
@@ -48,6 +74,8 @@
     <td><a href="/query_ticket.html">Go to Query</a></td>
 {% endif %}
 
+<script src="{{ url_for('static', filename='js/dashboardtabs.js') }}"></script>
 <script src="{{ url_for('static', filename='js/ageofcase.js') }}"></script>
+<script src="{{ url_for('static', filename='js/clearflash.js') }}"></script>
 </body>
 </html>
