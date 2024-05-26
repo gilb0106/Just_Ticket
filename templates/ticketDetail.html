@@ -58,10 +58,11 @@
         </div>
 
         <label for="content">Content:</label>
-        <textarea id="content" name="content" rows="4">{{ ticket['TicketContent'] }}</textarea>
+        <textarea id="content" name="content" rows="4" readonly>{{ ticket['TicketContent'] }}</textarea>
 
         <label for="comment">Update Ticket:</label>
         <input type="text" id="comment" name="comment">
+        <input type="submit" value="Update Ticket">
 <div class="transparent-background">
         <h2>All Ticket Updates</h2>
         {% if comments %}
@@ -79,7 +80,6 @@
         <p>No comments yet</p>
         {% endif %}
 
-        <input type="submit" value="Update Ticket">
     </form>
 </div>
 </body>

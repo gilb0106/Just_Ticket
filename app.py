@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session, Response, flash
-
+from datetime import datetime
 from DBConnectUser import connect_to_database
 from UserActivityDAO import UserActivityDAO
 from UserDao import UserDAO
@@ -69,13 +69,14 @@ def dashboard():
             open_tickets = [ticket for ticket in all_tickets if ticket.get_state() == 'open']
             closed_tickets = [ticket for ticket in all_tickets if ticket.get_state() == 'closed']
             return render_template('dashboard.html', in_progress_tickets=in_progress_tickets, open_tickets=open_tickets,
-                                   closed_tickets=closed_tickets)
+                                   closed_tickets=closed_tickets, current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
         elif role_name == 'customer':
             user_tickets = ticket_dao.get_user_tickets(user_id)
             active_tickets = [ticket for ticket in user_tickets if ticket.get_state() != 'closed']
             past_tickets = [ticket for ticket in user_tickets if ticket.get_state() == 'closed']
-            return render_template('dashboard.html', active_tickets=active_tickets, past_tickets=past_tickets)
+            return render_template('dashboard.html', active_tickets=active_tickets, past_tickets=past_tickets
+                                   , current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
         else:
             return "Invalid role"
@@ -145,14 +146,6 @@ def update_ticket():
         ticket_dao.update_ticket(ticket_number, content, new_state, modified_date, ticket_agent)
 
         return redirect(url_for('ticket_detail', ticket_number=ticket_number))
-
-
-@app.route('/createticket.html')  # Render html page
-def create_ticket_page():
-    current_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    return render_template('createticket.html', current_date=current_date)
-
-
 @app.route('/create_ticket', methods=['GET', 'POST'])
 def create_ticket():
     if 'username' in session:
@@ -160,7 +153,7 @@ def create_ticket():
             content = request.form['content']
             created_by = session['username']
             user_id = user_dao.get_user_id(created_by)
-            created_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            created_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             if ticket_dao.create_ticket(content, created_by, created_date):
                 user_activity.log_activity(user_id, 'ticket_create')
                 flash("Ticket created successfully", 'success')  # Flash success message
@@ -168,37 +161,10 @@ def create_ticket():
             else:
                 return "Failed to create ticket"
         elif request.method == 'GET':
-            current_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            return render_template('createticket.html', current_date=current_date)
+            current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            return render_template('dashboard.html', current_date=current_date)
     else:
         return redirect(url_for('login'))
-
-@app.route('/query_ticket.html', methods=['GET'])
-def query_ticket():
-    if 'username' in session:  # Ensure user is logged in
-        role_id = session.get('RoleID')
-        role_name = session.get('RoleName')
-
-        if request.method == 'POST':
-            # Extract form data
-            state = request.form.get('state')
-            created_date = request.form.get('created_date')
-            modified_date = request.form.get('modified_date')
-
-            # Query tickets based on the provided filters
-            filtered_tickets = ticket_dao.query_tickets(state, created_date, modified_date)
-
-            if filtered_tickets:
-                # Render the ticket data as HTML
-                return render_template('ticket_data.html', tickets=filtered_tickets, role_id=role_id,
-                                       role_name=role_name)
-            else:
-                return "No tickets found matching the criteria."
-        else:
-            return render_template('query_ticket.html', role_id=role_id, role_name=role_name)
-    else:
-        return redirect(url_for('login')) # If no user session redirect to login
-
 
 @app.route('/query_tickets', methods=['POST'])
 def query_tickets():

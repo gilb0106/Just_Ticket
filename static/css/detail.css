@@ -4,7 +4,6 @@ body {
     background-color: rgba(144, 238, 144, 0.3);
 }
 
-
 .flex-container {
     display: flex;
     justify-content: space-between;
@@ -13,7 +12,13 @@ body {
 
 .flex-item {
     flex: 1;
+    margin-right: 15px;
 }
+
+.flex-item:last-child {
+    margin-right: 0;
+}
+
 #flash-messages {
     color: red;
     font-weight: bold;
@@ -24,10 +29,12 @@ body {
     padding: 20px;
     border-radius: 10px;
 }
+
 .heading {
     font-weight: bold;
     margin-bottom: 5px;
 }
+
 label {
     display: block;
     font-weight: bold;
@@ -35,15 +42,73 @@ label {
 }
 
 input[type="text"],
-textarea {
-    width: fit-content; /* Adjusted to fit content */
-    padding: 8px;
-    box-sizing: border-box;
+textarea,
+select {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease;
+    margin-bottom: 15px; /* Added space between form elements */
+    width: auto; /* Allow width to adjust to content */
+}
+
+input[type="text"] {
+    width: calc(100% - 100px); /
+    display: inline-block;
+}
+
+input[type="text"]:focus,
+textarea:focus,
+select:focus {
+    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+textarea[readonly] {
+    background-color: #f9f9f9;
+    cursor: not-allowed;
+}
+
+button,
+input[type="submit"] {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #4caf50;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: 0 5px #999;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+button:hover,
+input[type="submit"]:hover {
+    background-color: #45a049;
+}
+
+button:active,
+input[type="submit"]:active {
+    background-color: #45a049;
+    box-shadow: 0 2px #666;
+    transform: translateY(2px);
 }
 
 #content,
 #comment {
-    width: 100%; /* Stretch to full width of the page */
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease;
+    margin-bottom: 15px;
+}
+
+#content[readonly],
+#comment[readonly] {
+    background-color: #f9f9f9;
+    cursor: not-allowed;
 }
 
 h2 {

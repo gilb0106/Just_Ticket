@@ -1,33 +1,46 @@
-
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
+
 body {
     font-family: Arial, sans-serif;
     line-height: 1.6;
-    background-color: #f4f4f4;
+    background-color: rgba(144, 238, 144, 0.3);
     color: #333;
     padding: 20px;
-    background-color: rgba(144, 238, 144, 0.3);
 }
+
 #flash-messages {
     color: red;
     font-weight: bold;
 }
+
 .container {
-    max-width: 500px;
+    max-width: 800px;
     margin: auto;
     padding: 20px;
     background-color: #fff;
     border-radius: 5px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
+
 form {
     display: flex;
     flex-direction: column;
+    margin-bottom: 20px;
 }
+
+textarea[readonly] {
+    background-color: #f0f0f0;
+    color: #000;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
 input[type="text"],
 input[type="password"],
 button[type="submit"] {
@@ -37,31 +50,101 @@ button[type="submit"] {
     border-radius: 5px;
     font-size: 16px;
 }
+
 button[type="submit"] {
     background-color: #4caf50;
     color: #fff;
     cursor: pointer;
 }
+
 button[type="submit"]:hover {
     background-color: #45a049;
 }
+
 table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
 }
+
 th, td {
     padding: 10px;
     border: 1px solid #ddd;
     text-align: left;
 }
+
 th {
     background-color: #f2f2f2;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 1px 1px 3px rgba(0, 0, 0, 0.1);
 }
+
+td {
+    background-color: #fff;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.07);
+}
+
 a {
     color: #007bff;
     text-decoration: none;
 }
+
 a:hover {
     text-decoration: underline;
+}
+
+.tabs {
+    overflow: hidden;
+}
+
+.tabs button {
+    float: left;
+    border: none;
+    background: #ddd;
+    padding: 10px;
+    cursor: pointer;
+}
+
+.tabs button.active {
+    background: #ccc;
+}
+
+.tab-content {
+    display: none;
+    padding: 20px;
+}
+
+.tab-content.active {
+    display: block;
+}
+button,
+input[type="submit"] {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #4caf50;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: 0 5px #999;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+button:hover,
+input[type="submit"]:hover {
+    background-color: #45a049;
+}
+
+button:active,
+input[type="submit"]:active {
+    background-color: #45a049;
+    box-shadow: 0 2px #666;
+    transform: translateY(2px);
+}
+.tabs button.active {
+    background: #4caf50; /* Green background for the active tab */
+    color: #fff; /* White text for the active tab */
 }
