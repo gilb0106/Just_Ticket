@@ -62,7 +62,7 @@ def dashboard():
     if 'username' in session:
         role_name = session.get('RoleName')
         user_id = session.get('UserID')
-
+# further drilldown from ticketdao added to allow for tab style display in dashboard
         if role_name == 'agent':
             all_tickets = ticket_dao.get_tickets()
             in_progress_tickets = [ticket for ticket in all_tickets if ticket.get_state() == 'inprogress']
